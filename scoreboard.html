@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Arkan Plaza Treasure Hunt — Live Scoreboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --gold:#d4a017; --gold-light:#f3d27a; --teal:#0f8a8a; --teal-dark:#0a5f5f;
+    --sand:#f6efe1; --ink:#2b2118; --paper:#fffdf7;
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",Tahoma,Verdana,sans-serif; color:var(--ink);
+    margin:0; background:var(--sand); line-height:1.5;}
+  .wrap{max-width:1100px; margin:0 auto; padding:18px 14px 60px;}
+  header{background:linear-gradient(135deg,var(--teal-dark),var(--teal)); color:#fff;
+    border-radius:16px; padding:18px 22px; display:flex; align-items:center;
+    justify-content:space-between; flex-wrap:wrap; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.15);}
+  header h1{margin:0; font-size:22px; letter-spacing:.3px;}
+  header .sub{font-size:13px; opacity:.9;}
+  .status{display:flex; align-items:center; gap:8px; font-size:13px;
+    background:rgba(255,255,255,.12); padding:6px 12px; border-radius:999px;}
+  .dot{width:10px; height:10px; border-radius:50%; background:#ff5252; box-shadow:0 0 0 0 rgba(255,82,82,.6);}
+  .dot.on{background:#37e08a; animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(55,224,138,.6)}70%{box-shadow:0 0 0 8px rgba(55,224,138,0)}100%{box-shadow:0 0 0 0 rgba(55,224,138,0)}}
+  .grid{display:grid; grid-template-columns:1.4fr 1fr; gap:18px; margin-top:18px;}
+  @media(max-width:820px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--paper); border:1px solid #e7ddc7; border-radius:14px;
+    padding:16px 18px; box-shadow:0 3px 10px rgba(0,0,0,.05);}
+  .card h2{margin:0 0 12px; font-size:18px; color:var(--teal-dark);
+    border-bottom:3px solid var(--gold); padding-bottom:6px;}
+  /* leaderboard */
+  .lb{display:flex; flex-direction:column; gap:12px;}
+  .team{border-radius:12px; padding:12px 14px; position:relative; overflow:hidden;
+    background:#fff; border:1px solid #ece3cd;}
+  .team .accent{position:absolute; left:0; top:0; bottom:0; width:8px;}
+  .team .row1{display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding-left:6px;}
+  .team .name{font-weight:800; font-size:17px;}
+  .team .meta{font-size:12px; color:#7a6a4f;}
+  .team .pts{font-size:26px; font-weight:900; color:var(--teal-dark);}
+  .team .pts small{font-size:12px; font-weight:600; color:#7a6a4f;}
+  .rank{position:absolute; right:10px; top:8px; font-size:12px; font-weight:800; color:#b89b3a;}
+  .prog{height:8px; background:#ece3cd; border-radius:999px; margin:8px 0 6px 6px; overflow:hidden;}
+  .prog > i{display:block; height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-light));}
+  .letters{display:flex; gap:4px; flex-wrap:wrap; padding-left:6px;}
+  .ltr{width:22px; height:26px; border-radius:6px; display:flex; align-items:center;
+    justify-content:center; font-weight:800; font-size:14px; background:#f1ece0; color:#bdb09a;}
+  .ltr.got{background:var(--teal); color:#fff;}
+  /* form */
+  label{display:block; font-size:13px; font-weight:700; margin:10px 0 4px; color:#5a4a32;}
+  select,input[type=number],input[type=text]{width:100%; padding:9px 10px; border-radius:9px;
+    border:1px solid #d8cba9; font-size:14px; background:#fff; color:var(--ink);}
+  .quick{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0;}
+  .quick button{font-size:12px; font-weight:700; border:none; border-radius:999px;
+    padding:6px 11px; cursor:pointer; background:#efe6cf; color:#5a4a32;}
+  .quick button:hover{background:var(--gold-light);}
+  .submit{width:100%; margin-top:8px; background:var(--teal); color:#fff; border:none;
+    padding:12px; border-radius:10px; font-size:15px; font-weight:800; cursor:pointer;}
+  .submit:hover{background:var(--teal-dark);}
+  .reset{margin-top:10px; width:100%; background:#fdeef2; color:#a83232; border:1px solid #f3c2cb;
+    padding:9px; border-radius:9px; font-weight:700; cursor:pointer; font-size:13px;}
+  /* feed */
+  .feed{display:flex; flex-direction:column; gap:8px; max-height:520px; overflow:auto;}
+  .ev{display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; background:#fff; border:1px solid #ece3cd;}
+  .ev .swatch{width:10px; height:34px; border-radius:4px; flex:none;}
+  .ev .what{flex:1; font-size:13px;}
+  .ev .who{font-weight:800;}
+  .ev .delta{font-weight:900; font-size:16px;}
+  .ev .delta.pos{color:#1c8a4a;} .ev .delta.neg{color:#c0392b;}
+  .ev .time{font-size:11px; color:#9a8a6c; white-space:nowrap;}
+  .hint{font-size:12px; color:#7a6a4f; margin-top:6px;}
+  .footer{font-size:12px; color:#6b5b42; margin-top:24px; text-align:center;}
+  .loading{padding:30px; text-align:center; color:#9a8a6c;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>𓂀 Arkan Plaza Treasure Hunt — Live Scoreboard</h1>
+      <div class="sub">The Quest for the Golden Gelato Goblet · 5 teams · real-time</div>
+    </div>
+    <div class="status"><span class="dot" id="dot"></span><span id="statusText">connecting…</span></div>
+  </header>
+
+  <div class="grid">
+    <!-- LEADERBOARD -->
+    <div class="card">
+      <h2>🏆 Leaderboard</h2>
+      <div class="lb" id="leaderboard"><div class="loading">Loading teams…</div></div>
+      <p class="hint">Letters fill in as teams clear stops (1→12). The secret word is what they spell: <b>GOLDENGELATO</b>.</p>
+    </div>
+
+    <!-- SIDEBAR: submit + feed -->
+    <div>
+      <div class="card">
+        <h2>➕ Award Points (Host / Teams)</h2>
+        <label for="team">Team</label>
+        <select id="team"></select>
+        <label for="stop">Stop (optional)</label>
+        <select id="stop">
+          <option value="">— none / twist —</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+        <label for="points">Points</label>
+        <input id="points" type="number" value="5" />
+        <label for="desc">Note</label>
+        <input id="desc" type="text" placeholder="e.g. Solved riddle at fountain" />
+        <div class="quick">
+          <button data-p="5" data-d="Riddle solved">+5 Riddle</button>
+          <button data-p="5" data-d="Dare / photo done">+5 Dare</button>
+          <button data-p="2" data-d="Bonus micro-dare">+2 Bonus</button>
+          <button data-p="10" data-d="First back — finish!">+10 Finish</button>
+          <button data-p="-3" data-d="Googled a clue (cheat)">−3 Cheat</button>
+          <button data-p="-2" data-d="Twist penalty">−2 Penalty</button>
+        </div>
+        <button class="submit" id="submitBtn">Award Points</button>
+        <button class="reset" id="resetBtn">🧹 Clear all scores (host only)</button>
+      </div>
+
+      <div class="card" style="margin-top:18px;">
+        <h2>📡 Live Feed</h2>
+        <div class="feed" id="feed"><div class="loading">Waiting for activity…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Built on Supabase · project <code>wmpksflzlyamjuiqmgle</code> · opens in any browser, updates instantly for everyone.</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wmpksflzlyamjuiqmgle.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcGtzZmx6bHlhbWp1aXFtZ2xlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NzQyODksImV4cCI6MjExMTA1MDI4OX0.lxkCKG9tdg_zCgGy29LGPAlkTQZCioy2fF3WQG-nosg';
+
+const LETTERS = {1:'G',2:'O',3:'L',4:'D',5:'E',6:'N',7:'G',8:'E',9:'L',10:'A',11:'T',12:'O'};
+const TOTAL_STOPS = 12;
+
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let TEAMS = [];   // [{id,name,color,mascot,god,chant}]
+let EVENTS = [];  // [{id,team_id,stop_number,points,description,created_at}]
+
+async function loadAll(){
+  try{
+    const [t, e] = await Promise.all([
+      client.from('teams').select('*').order('name'),
+      client.from('score_events').select('*').order('created_at', {ascending:false})
+    ]);
+    if(t.error) throw t.error;
+    if(e.error) throw e.error;
+    TEAMS = t.data || [];
+    EVENTS = e.data || [];
+    render();
+    setStatus(true);
+  }catch(err){
+    console.error(err);
+    setStatus(false, err.message);
+  }
+}
+
+function setStatus(ok, msg){
+  const dot = document.getElementById('dot');
+  const txt = document.getElementById('statusText');
+  dot.classList.toggle('on', ok);
+  txt.textContent = ok ? 'live · ' + new Date().toLocaleTimeString() : ('offline: ' + (msg||'error'));
+}
+
+function teamById(id){ return TEAMS.find(t=>t.id===id); }
+
+function compute(){
+  // map team -> {points, stops:Set, lastAt}
+  const m = {};
+  TEAMS.forEach(t=> m[t.id] = {points:0, stops:new Set(), lastAt:0});
+  EVENTS.forEach(ev=>{
+    const r = m[ev.team_id]; if(!r) return;
+    r.points += (ev.points||0);
+    if(ev.stop_number) r.stops.add(ev.stop_number);
+    const ts = new Date(ev.created_at).getTime();
+    if(ts > r.lastAt) r.lastAt = ts;
+  });
+  return m;
+}
+
+function render(){
+  renderTeamSelect();
+  renderLeaderboard();
+  renderFeed();
+}
+
+function renderTeamSelect(){
+  const sel = document.getElementById('team');
+  if(sel.options.length) return; // only build once
+  TEAMS.forEach(t=>{
+    const o = document.createElement('option'); o.value=t.id; o.textContent=t.name; sel.appendChild(o);
+  });
+}
+
+function renderLeaderboard(){
+  const board = document.getElementById('leaderboard');
+  const m = compute();
+  const ranked = TEAMS.map(t=>({t, ...m[t.id]})).sort((a,b)=> b.points-a.points || b.lastAt-a.lastAt);
+  board.innerHTML = '';
+  ranked.forEach((r, i)=>{
+    const stops = [...r.stops].sort((a,b)=>a-b);
+    const pct = Math.round((stops.length/TOTAL_STOPS)*100);
+    const lettersHtml = Array.from({length:TOTAL_STOPS}, (_,k)=>{
+      const n = k+1; const got = r.stops.has(n);
+      return `<div class="ltr ${got?'got':''}">${got?LETTERS[n]:''}</div>`;
+    }).join('');
+    const div = document.createElement('div');
+    div.className='team';
+    div.innerHTML = `
+      <div class="accent" style="background:${r.t.color}"></div>
+      <div class="rank">#${i+1}</div>
+      <div class="row1">
+        <div>
+          <div class="name" style="color:${r.t.color}">${r.t.name}</div>
+          <div class="meta">${r.t.god} · ${r.t.mascot}</div>
+        </div>
+        <div class="pts">${r.points}<small> pts</small></div>
+      </div>
+      <div class="prog"><i style="width:${pct}%"></i></div>
+      <div class="meta" style="padding-left:6px;">Stops cleared: ${stops.length}/${TOTAL_STOPS}</div>
+      <div class="letters">${lettersHtml}</div>
+    `;
+    board.appendChild(div);
+  });
+}
+
+function renderFeed(){
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+  if(!EVENTS.length){ feed.innerHTML = '<div class="loading">Waiting for activity…</div>'; return; }
+  EVENTS.slice(0,25).forEach(ev=>{
+    const t = teamById(ev.team_id);
+    const color = t ? t.color : '#999';
+    const name = t ? t.name : ev.team_id;
+    const d = ev.points>=0 ? '+'+ev.points : ev.points;
+    const cls = ev.points>=0 ? 'pos' : 'neg';
+    const when = timeAgo(ev.created_at);
+    const div = document.createElement('div');
+    div.className='ev';
+    div.innerHTML = `
+      <div class="swatch" style="background:${color}"></div>
+      <div class="what"><span class="who">${name}</span><br>${ev.description||''} ${ev.stop_number?('· stop '+ev.stop_number):''}</div>
+      <div class="delta ${cls}">${d}</div>
+      <div class="time">${when}</div>
+    `;
+    feed.appendChild(div);
+  });
+}
+
+function timeAgo(iso){
+  const s = Math.floor((Date.now()-new Date(iso).getTime())/1000);
+  if(s<60) return s+'s';
+  if(s<3600) return Math.floor(s/60)+'m';
+  return Math.floor(s/3600)+'h';
+}
+
+// --- Submit ---
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  const team_id = document.getElementById('team').value;
+  const stopRaw = document.getElementById('stop').value;
+  const points = parseInt(document.getElementById('points').value,10) || 0;
+  const description = document.getElementById('desc').value.trim();
+  if(!team_id){ alert('Pick a team'); return; }
+  const btn = document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Saving…';
+  const { error } = await client.from('score_events').insert({
+    team_id, stop_number: stopRaw? parseInt(stopRaw,10): null,
+    points, description: description || null
+  });
+  btn.disabled=false; btn.textContent='Award Points';
+  if(error){ alert('Error: '+error.message); setStatus(false, error.message); }
+  else { document.getElementById('desc').value=''; }
+});
+
+// quick chips prefill the form
+document.querySelectorAll('.quick button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.getElementById('points').value = b.dataset.p;
+    document.getElementById('desc').value = b.dataset.d;
+  });
+});
+
+// reset
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('Delete ALL score events? Teams stay. This cannot be undone.')) return;
+  const { error } = await client.from('score_events').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  if(error) alert('Error: '+error.message);
+});
+
+// --- Realtime + polling fallback ---
+function subscribe(){
+  try{
+    client.channel('scoreboard')
+      .on('postgres_changes', {event:'*', schema:'public', table:'score_events'}, ()=>loadAll())
+      .on('postgres_changes', {event:'*', schema:'public', table:'teams'}, ()=>loadAll())
+      .subscribe();
+  }catch(e){ console.warn('realtime unavailable', e); }
+}
+subscribe();
+loadAll();
+setInterval(loadAll, 5000); // fallback if realtime is off
+</script>
+</body>
+</html>
