@@ -1,4 +1,10 @@
 {
   "version": 2,
-  "cleanUrls": false
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/play", "destination": "/game.html?mode=play" },
+    { "source": "/play.html", "destination": "/game.html?mode=play" },
+    { "source": "/host", "destination": "/game.html?mode=host" },
+    { "source": "/host.html", "destination": "/game.html?mode=host" }
+  ]
 }
