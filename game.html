@@ -135,6 +135,7 @@
 </nav>
 
 <input type="file" id="camera" accept="image/*" capture="environment" class="hidden" onchange="onPhoto(event)" />
+<input type="file" id="videoCam" accept="video/*" capture="environment" class="hidden" onchange="onVideo(event)" />
 
 <script>
 /* ============ CONFIG ============ */
@@ -265,7 +266,7 @@ const FINISH_PTS={1:10,2:6,3:3};
 /* ============ STATE ============ */
 let S={team:localStorage.getItem('ght_team')||null,teams:[],progress:[],meta:null,events:[],settings:{},
        finishes:[],players:[],tab:'play',hostMode:false,playView:'riddle',curStop:null,reveal:null,
-       photo:null,gauntletPick:null,gTimer:null,gStart:0,waitTimer:null,hintMsg:'',wrongN:0,quiz:{},justDone:null};
+       photo:null,mediaType:null,gauntletPick:null,gTimer:null,gStart:0,waitTimer:null,hintMsg:'',wrongN:0,quiz:{},justDone:null};
 let lastData='';
 
 function $(id){return document.getElementById(id);}
@@ -487,15 +488,25 @@ function renderDare(st){
     <b style="font-size:14px;color:#5a4a32">${esc(st.loc)}</b></div>
     <div class="dare"><b>Dare:</b> ${esc(st.dare)}</div>
     <p class="bonus">${esc(st.bonus)}</p>
-    ${S.photo?`<img src="${S.photo}" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin-top:8px" />`:''}
-    <button class="btn main" onclick="$('camera').click()">${S.photo?'📷 Retake photo':'📷 Take the dare photo'}</button>
-    ${S.photo?`<button class="btn gold" onclick="acceptDare(${st.n})">✓ Photo looks glorious — claim the points</button>`:''}
-    <p class="tiny" style="margin-top:10px">The roaming host may demand to see this photo later. Keep it on your roll. 🐱</p>
+    ${S.photo?(S.mediaType==='video'
+      ?`<video src="${S.photo}" controls playsinline style="width:100%;border-radius:12px;border:3px solid var(--gold);margin-top:8px"></video>`
+      :`<img src="${S.photo}" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin-top:8px" />`):''}
+    <div class="row" style="margin-top:8px">
+      <button class="btn main" style="flex:1" onclick="$('camera').click()">📷 ${S.photo&&S.mediaType==='image'?'Retake photo':'Photo'}</button>
+      <button class="btn ghost" style="flex:1" onclick="$('videoCam').click()">🎥 ${S.photo&&S.mediaType==='video'?'Retake video':'Video'}</button>
+    </div>
+    ${S.photo?`<button class="btn gold" onclick="acceptDare(${st.n})">✓ ${S.mediaType==='video'?'Video':'Photo'} looks glorious — claim the points</button>`:''}
+    <p class="tiny" style="margin-top:10px">🎥 Short videos welcome (10–30s is plenty) — a video counts as your photo proof. The roaming host may demand to see it later; keep it on your roll. 🐱</p>
   </div>`;
 }
 function onPhoto(ev){
   const f=ev.target.files&&ev.target.files[0];if(!f)return;
-  S.photo=URL.createObjectURL(f);
+  S.photo=URL.createObjectURL(f);S.mediaType='image';ev.target.value='';
+  const n=curStop();renderDare(STOPS[n-1]);
+}
+function onVideo(ev){
+  const f=ev.target.files&&ev.target.files[0];if(!f)return;
+  S.photo=URL.createObjectURL(f);S.mediaType='video';ev.target.value='';
   const n=curStop();renderDare(STOPS[n-1]);
 }
 async function acceptDare(n){
@@ -506,11 +517,11 @@ async function acceptDare(n){
   if(data&&data.length){
     const pts=tierPts(st.tier);
     await c.from('score_events').insert({team_id:S.team,stop_number:n,points:pts,description:`Stop ${n} dare complete`});
-    S.photo=null;S.playView='riddle';S.hintMsg='';S.justDone=n;
+    S.photo=null;S.mediaType=null;S.playView='riddle';S.hintMsg='';S.justDone=n;
     await loadAll();
     showMsg(`Letter ${st.letter} earned! +${pts} — next stop unlocked. 🐱`,'ok');
     go('play');
-  }else{S.photo=null;await loadAll();go('play');}
+  }else{S.photo=null;S.mediaType=null;await loadAll();go('play');}
 }
 function renderDoneCard(st,n){
   $('screen').innerHTML=`
