@@ -449,11 +449,14 @@ async function submitAnswer(n){
     pmsg(S.wrongN%3===2?'Cleocatra laughs. That\'s not it — try again! 🐾':'Not that one. Read the riddle again…','err');
     return;
   }
-  // solved — first-writer guard
+  // solved — ensure a progress row exists (first-try-correct path has none yet),
+  // then claim it with the first-writer guard so points are awarded exactly once
   let lat=null,lng=null;
   try{const pos=await new Promise((res,rej)=>{if(!navigator.geolocation)return rej();
     navigator.geolocation.getCurrentPosition(p=>res(p),()=>rej(),{timeout:6000,maximumAge:30000});});
     lat=pos.coords.latitude;lng=pos.coords.longitude;}catch(e){}
+  await c.from('stops_progress').upsert({team_id:S.team,stop_number:n},
+    {onConflict:'team_id,stop_number',ignoreDuplicates:true});
   const up=c.from('stops_progress').update({riddle_solved:true,solved_at:new Date().toISOString(),lat,lng})
     .eq('team_id',S.team).eq('stop_number',n).eq('riddle_solved',false).select();
   const {data,error}=await up;
