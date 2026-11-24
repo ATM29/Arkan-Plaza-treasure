@@ -61,3 +61,54 @@ revoke all on function public.hunt_submit(integer,integer,text,text) from public
 revoke all on function public.hunt_review(bigint,text,text) from public, anon, authenticated;
 grant execute on function public.hunt_submit(integer,integer,text,text) to service_role;
 grant execute on function public.hunt_review(bigint,text,text) to service_role;
+
+-- ============================================================================
+-- LIVE SCOREBOARD (scoreboard.html / tiny-app.js)
+-- Tables for the 5-team Golden Gelato Goblet hunt: a leaderboard of teams and
+-- a stream of score events. The scoreboard reads these with the PUBLIC anon
+-- key from the browser, so RLS allows anon to read teams and to read/insert/
+-- delete score events. That is intentional for a trusted, small event: anyone
+-- with the link can award points. Never put your secret key in HTML.
+-- ============================================================================
+
+create table if not exists public.teams (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  color text not null default '#0f8a8a',
+  mascot text not null default '',
+  god text not null default '',
+  chant text not null default ''
+);
+
+create table if not exists public.score_events (
+  id uuid primary key default gen_random_uuid(),
+  team_id uuid not null references public.teams(id) on delete cascade,
+  stop_number smallint check (stop_number between 1 and 18),
+  points integer not null default 0,
+  description text,
+  created_at timestamptz not null default now()
+);
+create index if not exists score_events_created_idx on public.score_events (created_at desc);
+
+alter table public.teams enable row level security;
+alter table public.score_events enable row level security;
+drop policy if exists "public read teams" on public.teams;
+drop policy if exists "public read score_events" on public.score_events;
+drop policy if exists "public insert score_events" on public.score_events;
+drop policy if exists "public delete score_events" on public.score_events;
+create policy "public read teams"        on public.teams        for select using (true);
+create policy "public read score_events" on public.score_events for select using (true);
+create policy "public insert score_events" on public.score_events for insert with check (true);
+create policy "public delete score_events" on public.score_events for delete using (true);
+
+grant select on public.teams to anon, authenticated;
+grant select, insert, delete on public.score_events to anon, authenticated;
+
+-- Seed the five guilds (safe to re-run: unique name conflicts are ignored).
+insert into public.teams (name, color, mascot, god, chant) values
+  ('The Sapphire Scarabs', '#2b6cb0', 'Scarab beetle', 'Khepri',   'Roll it, roll it, scarab style — we shine bluer than the Nile!'),
+  ('The Crimson Cobras',   '#c0392b', 'Cobra',         'Wadjet',   'Hiss, snap, strike — red cobras never strike out!'),
+  ('The Emerald Ibises',   '#2e8b57', 'Ibis',          'Thoth',    'Quill and beak, we''re super wise — Emerald Ibises win the prize!'),
+  ('The Golden Jackals',   '#e0a800', 'Jackal',        'Anubis',   'Anubis guide, jackals gold — we sniff out treats like legends told!'),
+  ('The Violet Vultures',  '#7d3c98', 'Vulture',       'Nekhbet',  'Circle high, swoop down low — Violet Vultures steal the show!')
+on conflict (name) do nothing;

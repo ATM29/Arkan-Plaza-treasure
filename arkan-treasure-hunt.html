@@ -3,30 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>The Quest for the Golden Gelato Goblet — An Arkan Plaza Treasure Hunt</title>
+<title>The Quest for the Golden Gelato Goblet — An Arkan Plaza Treasure Hunt (Director's Cut)</title>
 <style>
   :root{
     --gold:#d4a017; --gold-light:#f3d27a; --teal:#0f8a8a; --teal-dark:#0a5f5f;
     --sand:#f6efe1; --ink:#2b2118; --blue:#2b6cb0; --red:#c0392b; --green:#2e8b57;
-    --yellow:#e0a800; --purple:#7d3c98; --paper:#fffdf7;
+    --yellow:#e0a800; --purple:#7d3c98; --paper:#fffdf7; --pink:#c2185b;
   }
   *{box-sizing:border-box}
   body{
     font-family:"Segoe UI",Tahoma,Verdana,sans-serif; color:var(--ink);
     margin:0; background:var(--sand); line-height:1.55;
   }
-  .wrap{max-width:920px; margin:0 auto; padding:24px 18px 80px;}
+  .wrap{max-width:940px; margin:0 auto; padding:24px 18px 80px;}
   header.cover{
     background:linear-gradient(135deg,var(--teal-dark),var(--teal));
     color:var(--paper); border-radius:18px; padding:34px 28px; text-align:center;
     box-shadow:0 10px 30px rgba(0,0,0,.18); position:relative; overflow:hidden;
   }
   header.cover:before{
-    content:"𓂀 𓆣 𓋹 𓃭 𓅓"; position:absolute; top:10px; left:0; right:0;
+    content:"𓂀 𓆣 𓋹 𓃭 𓅓 𓃠"; position:absolute; top:10px; left:0; right:0;
     font-size:22px; letter-spacing:10px; opacity:.25;
   }
   header.cover h1{margin:.2em 0; font-size:30px; letter-spacing:.5px;}
-  header.cover .sub{font-size:15px; opacity:.92; max-width:620px; margin:0 auto;}
+  header.cover .sub{font-size:15px; opacity:.92; max-width:640px; margin:0 auto;}
   .badge{display:inline-block; background:var(--gold); color:#3a2c00; font-weight:700;
     padding:5px 14px; border-radius:999px; font-size:13px; margin-top:14px;}
   h2{color:var(--teal-dark); border-bottom:3px solid var(--gold); padding-bottom:6px;
@@ -47,10 +47,25 @@
   .riddle{background:#fff8e6; border:1px dashed var(--gold); border-radius:10px;
     padding:12px 14px; margin:8px 0; font-style:italic;}
   .task{background:#eafaf6; border-radius:10px; padding:10px 14px; margin:8px 0;}
+  .cattax{background:#fdeef7; border-left:4px solid var(--pink); border-radius:8px;
+    padding:8px 12px; margin:8px 0; font-size:14px;}
   .letter{display:inline-flex; align-items:center; justify-content:center;
     width:34px; height:34px; background:var(--teal); color:#fff; font-weight:800;
     border-radius:50%; font-size:18px; box-shadow:0 2px 6px rgba(0,0,0,.2);}
+  .sealed{display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px; background:#3a2c00; color:var(--gold-light); font-weight:800;
+    border-radius:50%; font-size:15px; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .act{display:inline-block; background:var(--teal-dark); color:#fff; font-weight:800;
+    font-size:12px; padding:3px 12px; border-radius:999px; letter-spacing:1px;}
+  .act2{background:var(--pink);}
   .twist{background:#fdeef2; border-left:6px solid var(--red); border-radius:10px; padding:10px 14px; margin:10px 0;}
+  .curse{background:#f3e9ff; border-left:6px solid var(--purple); border-radius:10px; padding:10px 14px; margin:10px 0;}
+  .quest{background:#e9f7ef; border-left:6px solid var(--green); border-radius:10px; padding:10px 14px; margin:10px 0;}
+  .gauntlet{background:linear-gradient(135deg,#1f1b16,#3a2c00); color:#f3d27a;
+    border-radius:14px; padding:18px 20px; margin:16px 0;}
+  .gauntlet h3{color:var(--gold-light); margin-top:0;}
+  .gcard{background:rgba(255,255,255,.08); border:1px dashed var(--gold-light);
+    border-radius:10px; padding:10px 14px; margin:8px 0; color:#fff8e6;}
   .key{background:#1f1b16; color:#f3d27a; border-radius:14px; padding:18px 20px; margin-top:10px;
     font-family:"Courier New",monospace;}
   .key h3{color:var(--gold-light);}
@@ -60,17 +75,29 @@
   .checklist li{padding:4px 0 4px 28px; position:relative;}
   .checklist li:before{content:"☐"; position:absolute; left:4px; color:var(--teal); font-weight:700;}
   .score-row td:first-child{font-weight:700;}
+  .timeline td:first-child{white-space:nowrap; font-weight:700; color:var(--teal-dark);}
+  .stopgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px;}
+  .stopcard{border:2px dashed var(--gold); border-radius:12px; padding:12px 14px;
+    background:#fff; break-inside:avoid; font-size:13px;}
+  .stopcard b.sc-num{display:inline-block; background:var(--teal-dark); color:#fff;
+    border-radius:8px; padding:2px 9px; font-size:12px; letter-spacing:1px;}
+  .stopcard .sc-loc{font-weight:800; color:var(--teal-dark); font-size:15px; display:block; margin:6px 0 4px;}
+  .stopcard .sc-flap{background:var(--gold-light); border:1px solid var(--gold); border-radius:8px;
+    text-align:center; font-weight:800; color:#3a2c00; padding:6px; margin-top:8px; font-size:12px;}
+  .teamsheet{border:2px solid #333; border-radius:12px; padding:14px 16px; margin:14px 0; background:#fff;}
+  .toc{columns:2; font-size:14px;}
+  .toc a{color:var(--teal-dark); text-decoration:none;}
+  .footnote{font-size:13px; color:#6b5b42; margin-top:30px; border-top:1px solid #e7ddc7; padding-top:10px;}
+  .warn{background:#fff3cd; border-left:6px solid #e0a800; border-radius:10px; padding:10px 14px; margin:10px 0;}
   @media print{
     body{background:#fff;}
     .wrap{max-width:100%; padding:0 8px;}
     header.cover{box-shadow:none; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
     .no-print{display:none;}
-    .card,.team,.cp{box-shadow:none; break-inside:avoid;}
-    .teamsheet{break-inside:avoid; page-break-inside:avoid; border:2px solid #333; padding:14px; margin:10px 0;}
+    .card,.team,.cp,.teamsheet,.stopcard{box-shadow:none; break-inside:avoid;}
+    .teamsheet{page-break-inside:avoid;}
+    h2{page-break-after:avoid;}
   }
-  .toc{columns:2; font-size:14px;}
-  .toc a{color:var(--teal-dark); text-decoration:none;}
-  .footnote{font-size:13px; color:#6b5b42; margin-top:30px; border-top:1px solid #e7ddc7; padding-top:10px;}
 </style>
 </head>
 <body>
@@ -78,61 +105,76 @@
 
 <header class="cover">
   <h1>𓂀 The Quest for the Golden Gelato Goblet 𓂀</h1>
-  <div class="sub">A long, silly, sphincter-clenching-fun treasure hunt through <b>Arkan Plaza, Sheikh Zayed</b> — built for <b>5 teams</b>, one mischievous time-traveling cat, and a goblet made of pure frozen gold.</div>
-  <div class="badge">⏱ ~2.5–3 hours &nbsp;•&nbsp; 📍 Arkan Plaza, Giza &nbsp;•&nbsp; 👥 5 teams</div>
+  <div class="sub">A <b>long, silly, gloriously absurd</b> treasure hunt through <b>Arkan Plaza, Sheikh Zayed, Giza</b> — built for <b>5 teams</b>, one mischievous time-traveling cat, <b>18 stops in two acts</b>, and a goblet made of pure frozen gold.</div>
+  <div class="badge">⏱ ~4–4.5 hours &nbsp;•&nbsp; 📍 Arkan Plaza, Sheikh Zayed &nbsp;•&nbsp; 👥 5 teams &nbsp;•&nbsp; 🎬 18 stops · 2 acts · 1 gauntlet</div>
 </header>
 
 <div class="card no-print">
   <b>How to use this booklet</b>
   <ul class="toc">
-    <li><a href="#story">1. The Story</a></li>
+    <li><a href="#story">1. The Story (read aloud)</a></li>
     <li><a href="#teams">2. Meet the 5 Teams</a></li>
     <li><a href="#rules">3. Rules &amp; Scoring</a></li>
-    <li><a href="#trail">4. The 12-Stop Trail</a></li>
-    <li><a href="#start">5. Staggered Start Plan</a></li>
-    <li><a href="#twists">6. Quirky Twists</a></li>
-    <li><a href="#finale">7. Finale &amp; Prizes</a></li>
-    <li><a href="#key">8. Host Answer Key (SPOILERS)</a></li>
-    <li><a href="#sheets">9. Printable Team Sheets</a></li>
+    <li><a href="#setup">4. Host Setup Checklist</a></li>
+    <li><a href="#act1">5. ACT I — The 12 Stops (GOLDEN GELATO)</a></li>
+    <li><a href="#gauntlet">6. The Nine Lives Gauntlet</a></li>
+    <li><a href="#act2">7. ACT II — The 6 Stops (GOBLET)</a></li>
+    <li><a href="#start">8. Release Plan (5 teams)</a></li>
+    <li><a href="#twists">9. Twist Deck (10 cards)</a></li>
+    <li><a href="#curses">10. Curse Deck (6 cards)</a></li>
+    <li><a href="#quests">11. Hidden Side Quests</a></li>
+    <li><a href="#run">12. Run of Show (timeline)</a></li>
+    <li><a href="#finale">13. Finale &amp; Prizes</a></li>
+    <li><a href="#key">14. Host Answer Key (SPOILERS)</a></li>
+    <li><a href="#sheets">15. Printable Team Sheets ×5</a></li>
+    <li><a href="#cards">16. Printable Stop Cards ×18</a></li>
+    <li><a href="#backup">17. Backup Venues &amp; Rain Plan</a></li>
   </ul>
+  <p class="spoiler-note">🖨 Print guide: hosts get the whole booklet. Each team gets the two Trail sections (5 &amp; 7), the Rules (3), their Team Sheet (15) — <b>never</b> the Answer Key (14), Twist/Curse decks stay with the host.</p>
 </div>
 
 <!-- ===================== STORY ===================== -->
 <h2 id="story">1. The Story (read this aloud at the start)</h2>
 <div class="card">
-<p>Long ago — well, <i>last Tuesday</i> — a time-traveling Sphynx cat named <b>Cleocatra</b> smuggled the legendary <b>Golden Gelato Goblet of Arkan</b> out of the pharaohs' freezer and hid it somewhere in the plaza. She left behind a trail of twelve riddles, one at each of her favorite haunts, and a single warning scratched into a croissant:</p>
-<p style="text-align:center; font-style:italic; font-size:18px;">"Solve my rhymes, earn your letters, spell the treat, and the goblet is yours — or you'll be stuck licking the fountain forever."</p>
-<p>Five guilds of brave, slightly ridiculous explorers must race through Arkan Plaza, crack her clues, perform her absurd dares, and collect twelve letters. String them together and they spell where the goblet waits. May the gooiest team win. 🐱🍦</p>
+<p>Long ago — well, <i>last Tuesday</i> — a time-traveling Sphynx cat named <b>Cleocatra</b> smuggled the legendary <b>Golden Gelato Goblet of Arkan</b> out of the pharaohs' freezer and hid it somewhere in the plaza. She left behind a trail of eighteen riddles, one at each of her favorite haunts, and a single warning scratched into a croissant:</p>
+<p style="text-align:center; font-style:italic; font-size:18px;">"Solve my rhymes, earn your letters, spell my three words, and the goblet is yours — or you'll be stuck licking the fountain forever."</p>
+<p><b>Act I</b> gives you the first two words. <b>The Nine Lives Gauntlet</b> tests whether you deserve the rest. <b>Act II</b> gives you the last word — guarded by cat taxes, traps, and at least one suspiciously judgmental bakery spiral. String all eighteen letters together and they spell exactly what Cleocatra stole: <b>GOLDEN GELATO GOBLET</b> — which also tells you <i>where</i> she put it.</p>
+<p>Five guilds of brave, slightly ridiculous explorers must race through Arkan Plaza, crack her clues, perform her absurd dares, and survive her tricks. May the gooiest team win. 🐱🍦</p>
 </div>
 
 <!-- ===================== TEAMS ===================== -->
 <h2 id="teams">2. Meet the 5 Teams</h2>
-<p>Give each team a colored bandana/ribbon, a silly name, a mascot god, and a chant they must perform whenever they pass a <b>Host Checkpoint</b>.</p>
+<p>Give each team a colored bandana/ribbon, a silly name, a patron god, a chant they must perform at every <b>Host Checkpoint</b>, and <b>one Blessing</b> they may cash in once during the hunt.</p>
 <div class="grid">
   <div class="team" style="border-color:var(--blue)">
     <span class="pill" style="background:var(--blue)">BLUE</span> <b>The Sapphire Scarabs</b>
     <p><b>Patron god:</b> Khepri, the dawn beetle who rolls the sun across the sky (and, allegedly, the goblet across the plaza).</p>
     <p><b>Chant:</b> <i>"Roll it, roll it, scarab style — we shine bluer than the Nile!"</i></p>
+    <p><b>Blessing — Scarab's Shield:</b> ignore your first Curse card, once. 🪲</p>
   </div>
   <div class="team" style="border-color:var(--red)">
     <span class="pill" style="background:var(--red)">RED</span> <b>The Crimson Cobras</b>
     <p><b>Patron god:</b> Wadjet, the cobra goddess who protects with a hiss and a hairflip.</p>
     <p><b>Chant:</b> <i>"Hiss, snap, strike — red cobras never strike out!"</i> (add a dramatic snake motion)</p>
+    <p><b>Blessing — Cobra's Strike:</b> redo one failed dare once, free. 🐍</p>
   </div>
   <div class="team" style="border-color:var(--green)">
     <span class="pill" style="background:var(--green)">GREEN</span> <b>The Emerald Ibises</b>
     <p><b>Patron god:</b> Thoth, the ibis-headed god of wisdom, writing, and questionable dance moves.</p>
     <p><b>Chant:</b> <i>"Quill and beak, we're super wise — Emerald Ibises win the prize!"</i></p>
+    <p><b>Blessing — Thoth's Wisdom:</b> two free Hint tokens instead of one. 🪶</p>
   </div>
   <div class="team" style="border-color:var(--yellow)">
     <span class="pill" style="background:var(--yellow);color:#3a2c00">GOLD</span> <b>The Golden Jackals</b>
     <p><b>Patron god:</b> Anubis, the jackal who guides souls — and, today, confused treasure hunters.</p>
     <p><b>Chant:</b> <i>"Anubis guide, jackals gold — we sniff out treats like legends told!"</i></p>
+    <p><b>Blessing — Anubis's Nose:</b> one free directional nudge from the host (not the answer). 🐺</p>
   </div>
   <div class="team" style="border-color:var(--purple)">
     <span class="pill" style="background:var(--purple)">PURPLE</span> <b>The Violet Vultures</b>
     <p><b>Patron god:</b> Nekhbet, the vulture who circles protectively (and eyes your fries).</p>
     <p><b>Chant:</b> <i>"Circle high, swoop down low — Violet Vultures steal the show!"</i> (flap arms)</p>
+    <p><b>Blessing — Vulture's Patience:</b> bank one Twist card and play it whenever you like. 🦅</p>
   </div>
 </div>
 
@@ -140,262 +182,542 @@
 <h2 id="rules">3. Rules &amp; Scoring</h2>
 <div class="card">
 <ul>
-  <li><b>Stay inside Arkan Plaza.</b> Buddy system, hydrated, watch for cars in the garage. It's a hunt, not a heist.</li>
-  <li>Each team carries a <b>Clue Sheet</b> (Section 9) and a <b>Treasure Pouch</b> (any small bag) for collected letters/trinkets.</li>
-  <li>At every stop a <b>Host</b> (or a posted clue card) confirms the riddle answer and initials the task. No initials = no points.</li>
-  <li><b>Photos are proof.</b> Most tasks require a team photo. Keep your camera roll ready.</li>
-  <li><b>No Googling Cleocatra.</b> Using the internet to solve a riddle = −3 points per offense. Ask a human, ask a shop, ask a pigeon.</li>
-  <li>First team back at the fountain with all 12 letters spelled correctly gets the <b>Finish Bonus</b>.</li>
+  <li><b>Stay inside Arkan Plaza.</b> Buddy system, hydrated, watch for cars in the garage and in the lanes. It's a hunt, not a heist. <b>No running indoors</b> — walk fast, strut even faster.</li>
+  <li>Each team carries a <b>Team Sheet</b> (Section 15), the <b>Trail pages</b> (riddles only — letters are sealed at each stop), and a <b>Treasure Pouch</b> for collected letters.</li>
+  <li><b>Route:</b> everyone does stops <b>1 → 18 in order</b>, staggered releases. After stop 12 → the <b>Nine Lives Gauntlet</b> → Act II (stops 13–18) → <b>RUN back to Stop 1</b> to finish.</li>
+  <li>At every stop, solve the riddle (say the venue aloud to the host / open the sealed flap on the posted Stop Card), do the dare, get <b>host initials</b>. No initials = no points, no letter.</li>
+  <li><b>Photos are proof.</b> Most dares require a team photo. Keep your camera roll ready and show the host.</li>
+  <li><b>No Googling Cleocatra.</b> Using the internet to solve a riddle = −3 per offense (Curse card 🌐). Ask a human, ask a shop, ask a pigeon.</li>
+  <li><b>Hint tokens:</b> each team gets <b>1 free "Cleocatra Whisker" hint</b> (Emerald Ibises get 2). Extra hints cost <b>−2 each</b>, declared out loud so everyone judges you lovingly.</li>
+  <li>First team back at the courtyard with all 18 letters spelling the three words correctly gets the <b>Finish Bonus</b>.</li>
 </ul>
 <table class="score-row">
   <tr><th>Action</th><th>Points</th></tr>
-  <tr><td>Correct riddle answer at a stop (host initials)</td><td>+5</td></tr>
-  <tr><td>Completed dare / photo at a stop</td><td>+5</td></tr>
-  <tr><td>Bonus micro-dare at a stop (★)</td><td>+1 to +2</td></tr>
-  <tr><td>Quirky Twist cards (Section 6)</td><td>−2 to +5</td></tr>
+  <tr><td>Correct riddle answer at an Act I stop (host initials)</td><td>+5</td></tr>
+  <tr><td>Completed Act I dare / photo</td><td>+5</td></tr>
+  <tr><td>Correct riddle answer at an Act II stop (harder!)</td><td>+8</td></tr>
+  <tr><td>Completed Act II Cat Tax / photo</td><td>+8</td></tr>
+  <tr><td>★ micro-bonus at a stop</td><td>+1 to +2</td></tr>
+  <tr><td>Nine Lives Gauntlet challenge</td><td>+10 (bonus +3 if under 2 min)</td></tr>
+  <tr><td>Twist cards (Section 9)</td><td>−2 to +5</td></tr>
+  <tr><td>Hidden side quests (Section 11)</td><td>+3 to +5</td></tr>
   <tr><td>Finish bonus (1st team back, letters correct)</td><td>+10</td></tr>
-  <tr><td>Internet cheating</td><td>−3 each</td></tr>
+  <tr><td>2nd / 3rd team back with correct letters</td><td>+6 / +3</td></tr>
+  <tr><td>Extra hint token</td><td>−2 each</td></tr>
+  <tr><td>Internet cheating / Curse cards</td><td>−2 to −5</td></tr>
 </table>
-<p><b>Max ~120+</b> before twists. Tie-breaker: best team chant, judged by a random bystander.</p>
+<p><b>Max ≈ 300</b> before twists and chaos. Tie-breaker: best team chant performed to a randomly selected bystander, judged on commitment alone.</p>
 </div>
 
-<!-- ===================== TRAIL ===================== -->
-<h2 id="trail">4. The 12-Stop Trail</h2>
-<p>Teams proceed in numerical order, wrapping from 12 back to 1. Each stop gives <b>one letter</b>. In order the letters spell <b>GOLDENGELATO</b> → "Golden Gelato" → the goblet is frozen gold, hidden where the chocolate drips. (Final reveal at the fountain.)</p>
+<!-- ===================== SETUP ===================== -->
+<h2 id="setup">4. Host Setup Checklist <span class="no-print">(do this before the teams arrive)</span></h2>
+<div class="card no-print">
+<ul class="checklist">
+  <li>Print <b>18 Stop Cards</b> (Section 16) on card stock; fold each letter under the gold flap; tape one at each venue (ask staff politely first — a tip or a treat for the café helps).</li>
+  <li>Print one <b>Team Sheet</b> (Section 15) per team + copies of the Trail pages (Sections 5 &amp; 7) for every team.</li>
+  <li>Hide <b>3 Cleocatra paw-print stickers</b> around the plaza for Side Quest S3 (plaza staff-approved spots only).</li>
+  <li>Cut the <b>Twist Deck</b> (10), <b>Curse Deck</b> (6), and <b>6 Gauntlet cards</b> (Section 6) into shuffled decks.</li>
+  <li>Prepare 5 bandanas, a whistle, a timer, 1 "free hint" token per team (2 for Green), a marker for initials, a fully charged phone for scoreboard photos.</li>
+  <li>Stage the <b>Gauntlet Hub</b> by the open courtyard at Theatro Arkan: water, a roll of toilet paper (mummy wrap), a ball + stick (scarab roll).</li>
+  <li>Freeze the trophy bag: yes, literally put the trophy/prize envelope in a freezer bag with ice — Cleocatra kept it frozen. 🧊</li>
+  <li>Agree with one gelato/chocolate counter (Stavolta Gelato or Dipndip) if you want the finale to end at the counter instead of the courtyard.</li>
+  <li>Tell everyone the <b>safety word</b>: if any host shouts <b>"SPHYNX!"</b>, all teams freeze and listen.</li>
+</ul>
+</div>
+
+<!-- ===================== ACT I ===================== -->
+<h2 id="act1">5. ACT I — The 12-Stop Trail <span class="act">GOLDEN GELATO</span></h2>
+<p>Teams proceed in numerical order. Each stop yields <b>one sealed letter</b> after the riddle is solved and the dare is done. <b>Do not tell teams the letters</b> — they collect them physically and the phrase assembles itself. In order, Act I spells <b>G · O · L · D · E · N · G · E · L · A · T · O</b>.</p>
 
 <div class="card cp">
-  <p><span class="letter">G</span> &nbsp;<span class="loc">STOP 1 — The Grand Fountain (Heart of Arkan)</span></p>
-  <div class="riddle">"I am the pulse where Arkan's veins all meet,<br>where water leaps and strangers greet.<br>Stand where the plaza's heartbeat sounds —<br>the first <b>G</b> is where your quest is found."</div>
-  <div class="task"><b>Dare:</b> Huddle-photo with the fountain; everyone points at the water like they just discovered it. <br><b>★ Bonus:</b> Name the fountain something absurd (e.g. "Lake Cleocatra") and shout it 3× together. (+1)</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 1 — The Grand Fountain &amp; Main Courtyard (Heart of Arkan)</span></p>
+  <div class="riddle">"I am the pulse where Arkan's veins all meet,<br>where water leaps and strangers greet.<br>Stand where the plaza's heartbeat sounds —<br>your quest begins on hallowed grounds."<br><i>(Host note: if the fountain is dry, the main courtyard by Theatro Arkan counts.)</i></div>
+  <div class="task"><b>Dare:</b> Huddle-photo with the fountain/courtyard; everyone points at the water like they just discovered it. <br><b>★ Bonus:</b> Name the fountain something absurd (e.g. "Lake Cleocatra") and shout it 3× together. (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">O</span> &nbsp;<span class="loc">STOP 2 — Paul (The French Bakery &amp; Café)</span></p>
-  <div class="riddle">"From Paris I came with butter and pride,<br>my croissants flake on the Egyptian side.<br>Find the café where the Eiffel meets the Nile —<br>the letter <b>O</b> waits beneath its style."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 2 — Paul (The French Bakery &amp; Café)</span></p>
+  <div class="riddle">"From Paris I came with butter and pride,<br>my croissants flake on the Egyptian side.<br>Find the café where the Eiffel meets the Nile —<br>and don't leave without a flaky smile."</div>
   <div class="task"><b>Dare:</b> Photo of everyone mime-eating an invisible croissant with maximum fancy. <br><b>★ Bonus:</b> Say "Bonjour Arkan!" in a terrible French accent. (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">L</span> &nbsp;<span class="loc">STOP 3 — Dipndip (The Chocolate Lab)</span></p>
-  <div class="riddle">"I dip, I drip, I melt with glee,<br>chocolate crepes are the key to me.<br>Sweet and silly, gooey and gold —<br>the letter <b>L</b> in the cocoa is told."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 3 — Dipndip (The Chocolate Lab)</span></p>
+  <div class="riddle">"I dip, I drip, I melt with glee,<br>chocolate crepes are the key to me.<br>Follow the cocoa river of dreams<br>to the sweetest stop in Arkan's streams."</div>
   <div class="task"><b>Dare:</b> Freeze like a chocolate-fountain statue (everyone strikes a pose, hold 10s) — photo. <br><b>★ Bonus:</b> One member licks the air like it's a giant dipping strawberry. (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">D</span> &nbsp;<span class="loc">STOP 4 — The Cinema</span></p>
-  <div class="riddle">"Lights go low and the giants appear,<br>in 3D and VIP I bring the cheer.<br>Roll the reel where the stories play —<br>the letter <b>D</b> is just a stride away."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 4 — Cima Arkan (The Cinema, Premiere Cinemas)</span></p>
+  <div class="riddle">"Seven halls and a VIP throne,<br>the loudest silence the west side has known.<br>Where stories flicker bright and tall —<br>find the biggest screen of them all."</div>
   <div class="task"><b>Dare:</b> Red-carpet pose photo at the cinema entrance; one member announces the team in a deep movie-trailer voice: <i>"In a plaza far, far away… THE SAPPHIRE SCARABS!"</i> <br><b>★ Bonus:</b> Entire team does the "popcorn explosion" jump. (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">E</span> &nbsp;<span class="loc">STOP 5 — Kazoku (Japanese / Asian)</span></p>
-  <div class="riddle">"From the land where the sun climbs high,<br>I roll my rice and let flavors fly.<br>Find the spot with the rising sun —<br>the letter <b>E</b> is the lucky one."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 5 — Kazoku (Japanese / Asian)</span></p>
+  <div class="riddle">"From the land where the sun climbs high,<br>I roll my rice and let flavors fly.<br>Find the spot where the chopsticks rest<br>and bow to the kitchen's very best."</div>
   <div class="task"><b>Dare:</b> Bow to each other like samurai; synchronized "konnichiwa" wave — photo. <br><b>★ Bonus:</b> One member says a Japanese food word correctly (sushi / ramen / matcha). (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">N</span> &nbsp;<span class="loc">STOP 6 — Zooba (Egyptian Street Food)</span></p>
-  <div class="riddle">"Taameya, koshari, foul — my street food makes the hungry whole.<br>Most Egyptian of all the plaza's fare —<br>the letter <b>N</b> is waiting there."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 6 — Zooba (Egyptian Street Food)</span></p>
+  <div class="riddle">"I'm Egypt on a plate with a street-food crown:<br>taameya crisp and koshari brown.<br>Find the most Egyptian kitchen around<br>where ful and falafel reign unbound."</div>
   <div class="task"><b>Dare:</b> Photo of the team doing the "baladi bounce" (a silly local shuffle dance). <br><b>★ Bonus:</b> Shout "Yalla!" like you mean it, then translate it. (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">G</span> &nbsp;<span class="loc">STOP 7 — The Gourmet Food Market</span></p>
-  <div class="riddle">"Cheese and olives, nuts and wine,<br>a market fine and oh-so-divine.<br>Where foodies gather to graze and gawk —<br>the letter <b>G</b> is the tasty talk."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 7 — Corners Market (Gourmet Corner)</span></p>
+  <div class="riddle">"My name has corners but I'm no square —<br>I'm packed with treats beyond compare.<br>Find the market hiding in the plaza's care<br>where foodies gawk and grazers glare."</div>
   <div class="task"><b>Dare:</b> Each member finds &amp; photos ONE weird/luxury food item (e.g. truffle, fancy cheese, exotic fruit). <br><b>★ Bonus:</b> Correctly name another team's weird item. (+2)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">E</span> &nbsp;<span class="loc">STOP 8 — Crowne Plaza Hotel (IHG)</span></p>
-  <div class="riddle">"A crown of rest where travelers stay,<br>IHG's tower guards the day.<br>Bow to the king at the plaza's door —<br>the letter <b>E</b> is the royal score."</div>
-  <div class="task"><b>Dare:</b> Team photo doing a royal bow/curtsy at the hotel entrance. <br><b>★ Bonus:</b> One member gives a 10-second "Pharaoh of Arkan" acceptance speech. (+2)</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 8 — Crowne Plaza West Cairo Arkan (IHG Hotel)</span></p>
+  <div class="riddle">"A crown of rest where travelers stay,<br>pillows and lobbies guard the day.<br>Bow to the royal hotel door —<br>your next clue lives on the royal floor."</div>
+  <div class="task"><b>Dare:</b> Team photo doing a royal bow/curtsy at the hotel entrance (quietly — guests are sleeping off jet lag). <br><b>★ Bonus:</b> One member gives a 10-second "Pharaoh of Arkan" acceptance speech. (+2)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">L</span> &nbsp;<span class="loc">STOP 9 — Jones the Grocer (Australian Gourmet)</span></p>
-  <div class="riddle">"Down-under baker with a grocer's heart,<br>fresh bread and deli are my fine art.<br>Find the Aussie with the savory smell —<br>the letter <b>L</b> in the bakery dwell."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 9 — Jones the Grocer (Australian Gourmet)</span></p>
+  <div class="riddle">"A grocer from down under with a baker's heart,<br>fresh bread and deli are my fine art.<br>Find the Aussie with the savory smell —<br>where floury miracles always sell."</div>
   <div class="task"><b>Dare:</b> Photo of the team smelling bread dramatically (eyes closed, blissful). <br><b>★ Bonus:</b> Attempt an Australian accent: "G'day, one meat pie, mate." (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">A</span> &nbsp;<span class="loc">STOP 10 — The Arcade</span></p>
-  <div class="riddle">"Beeps and blips and tickets to win,<br>I light up the night with a playful grin.<br>Where the gamers and kids convene —<br>the letter <b>A</b> is the in-between."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 10 — The Arcade (or Play N Trade Egypt)</span></p>
+  <div class="riddle">"Beeps, blips, and tickets to win;<br>I light up faces with a playful grin.<br>Where gamers, kids, and joysticks convene,<br>find me blinking between the scenes."</div>
   <div class="task"><b>Dare:</b> Team photo, everyone mid-"game face" (tongue out / focused squint). <br><b>★ Bonus:</b> One member does a victory dance like they just beat the high score. (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">T</span> &nbsp;<span class="loc">STOP 11 — Coffee Berry</span></p>
-  <div class="riddle">"Bean and brew to wake the soul,<br>I keep the tired explorers whole.<br>Find the berry that fuels the quest —<br>the letter <b>T</b> is the caffeinated test."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 11 — Coffee Berry</span></p>
+  <div class="riddle">"Bean and brew to wake the soul,<br>I keep tired explorers whole.<br>Find the berry that fuels the quest<br>and watch sleepy teams pass my test."</div>
   <div class="task"><b>Dare:</b> Group photo toasting with empty "invisible coffee cups." <br><b>★ Bonus:</b> Everyone says their order in one synchronized chant. (+1)</div>
 </div>
 
 <div class="card cp">
-  <p><span class="letter">O</span> &nbsp;<span class="loc">STOP 12 — Lucille's Diner (American)</span></p>
-  <div class="riddle">"Pancakes stacked to the desert sky,<br>diner style with a wink and a sigh.<br>Last stop, y'all, before you're through —<br>the letter <b>O</b> is the final clue."</div>
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 12 — Lucille's Diner (American)</span></p>
+  <div class="riddle">"Pancakes stacked to the desert sky,<br>diner style with a wink and a sigh.<br>Find the American dream on a plate —<br>syrup, burgers, and a milkshake fate."</div>
   <div class="task"><b>Dare:</b> Team photo doing a diner "whistle for the waitress" pose. <br><b>★ Bonus:</b> One member does the best fake-American "Hey darlin', refill please!" (+1)</div>
-  <p><b>FINAL RIDDLE (read aloud here):</b> "You've spelled my treat from G to O — now hurry back where fountains flow. The Golden Gelato Goblet waits, where Arkan's heartbeat first took flight. <b>RUN to STOP 1!</b>"</p>
+  <p><b>END OF ACT I (read aloud or on the Stop Card):</b> "Two words are yours — but Cleocatra's trials aren't over. Carry your letters to <b>THE NINE LIVES GAUNTLET</b> at the courtyard by Theatro Arkan. Draw your challenge. Pass, and the map to the final word is yours. 🐱"</p>
 </div>
 
-<!-- ===================== START PLAN ===================== -->
-<h2 id="start">5. Staggered Start Plan (so teams don't pile up)</h2>
-<p>Release teams <b>3 minutes apart</b> at different stops; each then follows stops in order, wrapping 12→1. This spreads 5 teams across the plaza.</p>
+<!-- ===================== GAUNTLET ===================== -->
+<h2 id="gauntlet">6. The Nine Lives Gauntlet <span class="act">MANDATORY · BETWEEN ACTS</span></h2>
+<div class="gauntlet">
+  <h3>⚔️ How it works</h3>
+  <p>At the Gauntlet Hub (open courtyard by Theatro Arkan), each team draws <b>one</b> face-down challenge card and has <b>2 minutes</b> on the clock. Complete it for <b>+10</b> — and <b>+3 speed bonus</b> if the host's timer says under 2:00. Fail and you may redraw once (0 points, maximum dignity lost). Then hand over your Act I letters: the host staples/clips a sealed <b>Act II map envelope</b> to your sheet. Only then do stops 13–18 unlock.</p>
+  <div class="gcard"><b>🃏 Card 1 — Mummy Wrap Race:</b> Wrap one teammate in toilet paper from head to toe in 90 seconds. They must shamble three steps and say "I wake… for gelato."</div>
+  <div class="gcard"><b>🃏 Card 2 — The Sphinx's Riddle:</b> The host asks ONE riddle (answers in the Key). Correct = pass. Wrong = you must hiss at your own shadow for 10 seconds, then try again.</div>
+  <div class="gcard"><b>🃏 Card 3 — Scarab Roll:</b> Roll a ball (or a fruit) across the courtyard to a line and back using only a stick — no hands. Dropping it = start over with a dramatic scarab death pose first.</div>
+  <div class="gcard"><b>🃏 Card 4 — Canopic Jar Quiz:</b> Five rapid-fire questions from the host (Key §G). Need 4 of 5. Shouting answers in unison encouraged.</div>
+  <div class="gcard"><b>🃏 Card 5 — Cleocatra's Catwalk:</b> Strut a 5-meter catwalk to the host's beat (they hum), ending in a pose + one perfect purr into the camera.</div>
+  <div class="gcard"><b>🃏 Card 6 — The Sacred Meow Choir:</b> The whole team sings their team chant — but every word is "meow." The host must be seen wiping away a tear.</div>
+</div>
+
+<!-- ===================== ACT II ===================== -->
+<h2 id="act2">7. ACT II — The 6-Stop Trail <span class="act act2">GOBLET</span></h2>
+<p>Act II is <b>Cleocatra's premium round</b>: bigger points (+8/+8), harder mischief, and every stop demands a printed <b>Cat Tax</b> before the letter flap may be opened. The letters, in order, spell <b>G · O · B · L · E · T</b>. Together with Act I: <b>GOLDEN GELATO GOBLET</b>.</p>
+
+<div class="card cp">
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 13 — Gigi's (Burger Legend)</span></p>
+  <div class="riddle">"Named after a legend of burger fame,<br>one bite and the plaza knows my name.<br>Find the joint where the angry patties grin —<br>and where the queue never thins."</div>
+  <div class="task"><b>Cat Tax:</b> The Scaredy-Cat Arch — everyone hunches, arched backs, mid-hiss at the camera, 3 seconds — photo. <br><b>★ Bonus:</b> Name your team's signature burger in a dramatic movie voice. (+2)</div>
+</div>
+
+<div class="card cp">
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 14 — Osana Family Wellness Café</span></p>
+  <div class="riddle">"Smoothies, stretches, and a zen-ish zen,<br>wellness is my religion and I'm its den.<br>Find the café where chill is the game<br>and kids play while adults regain… their calm. (What.)"</div>
+  <div class="task"><b>Cat Tax:</b> Cat Yoga — team flows from downward-dog into a full arched-back cat stretch, held 5s — photo. <br><b>★ Bonus:</b> Each member whispers their "aura color" to the camera. (+2)</div>
+</div>
+
+<div class="card cp">
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 15 — TBS (The Bakery Shop)</span></p>
+  <div class="riddle">"Three letters on my sign, but forty doughs are mine.<br>Where dough rises and cinnamon sings,<br>find me where the baguettes align —<br>the bakery with the tidiest wings."</div>
+  <div class="task"><b>Cat Tax:</b> The Human Croissant — the whole team curls into a spiral on the ground, head to tail, photographed from above. <br><b>★ Bonus:</b> Best fake French-baker laugh ("heh heh heh"). (+2)</div>
+</div>
+
+<div class="card cp">
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 16 — Leila Min Lebnen (Lebanese)</span></p>
+  <div class="riddle">"From Lebanon with love and mezze grand,<br>hummus mountains in a garlicky land.<br>Find the cozy corner of Arabic finesse —<br>where every plate is a big 'habibi' yes."</div>
+  <div class="task"><b>Cat Tax:</b> The Hummus Facial — everyone strikes a pose of applying a luxurious hummus mask, eyes blissfully closed — photo. <br><b>★ Bonus:</b> Whole team roars "Yalla habibi!" in perfect sync. (+2)</div>
+</div>
+
+<div class="card cp">
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 17 — Eatery (International, Open Kitchen)</span></p>
+  <div class="riddle">"Sushi, pasta, steak, and pie,<br>my open kitchen lets you watch them fry.<br>I'm the plaza's eat-and-greet, the liveliest spot to meet —<br>find me hungry, leave me complete."</div>
+  <div class="task"><b>Cat Tax:</b> The Foodie Faint — the team sniffs an invisible dish and dramatically faints (safely, indoors-appropriate) — photo. <br><b>★ Bonus:</b> Improvise a 10-second snooty food review of the plaza. (+2)</div>
+</div>
+
+<div class="card cp">
+  <p><span class="sealed">?</span> &nbsp;<span class="loc">STOP 18 — Ted's (All-Day Breakfast &amp; Bakery)</span></p>
+  <div class="riddle">"All-day breakfast and pastries divine,<br>I'm the last stop in this feline design.<br>Find Ted's corner of eggs and bread —<br>then <b>RACE</b> to the courtyard where your quest started instead!"</div>
+  <div class="task"><b>Cat Tax:</b> The Pancake Stack — team stacks hands into a towering pancake pile, someone mimes the syrup pour — photo. <br><b>★ Bonus:</b> Whole team barks "GOBLET!" in a trailer voice. (+2)</div>
+  <p><b>FINAL RIDDLE (read aloud here):</b> "You've spelled my three words from G to T — now run back where the fountain flow. Golden… Gelato… Goblet. <i>Where does a golden gelato goblet live?</i> <b>RUN TO STOP 1!</b> 🐱🍦"</p>
+</div>
+
+<!-- ===================== RELEASE PLAN ===================== -->
+<h2 id="start">8. Release Plan (so teams don't pile up)</h2>
+<p>Everyone runs the same route <b>1 → 18</b>, but teams are <b>released 5 minutes apart from Stop 1</b>. This keeps a natural spread: by Stop 4 the pack has strung out, and Twist cards, side quests and hint purchases shuffle the order further.</p>
 <table>
-  <tr><th>Team</th><th>Starts at</th><th>Then visits</th></tr>
-  <tr><td><span class="pill" style="background:var(--blue)">BLUE</span> Sapphire Scarabs</td><td>Stop 1 (Fountain)</td><td>1→2→3→…→12→(finish)</td></tr>
-  <tr><td><span class="pill" style="background:var(--red)">RED</span> Crimson Cobras</td><td>Stop 4 (Cinema)</td><td>4→5→6→…→12→1→2→3</td></tr>
-  <tr><td><span class="pill" style="background:var(--green)">GREEN</span> Emerald Ibises</td><td>Stop 7 (Gourmet Market)</td><td>7→8→9→…→12→1→…→6</td></tr>
-  <tr><td><span class="pill" style="background:var(--yellow);color:#3a2c00">GOLD</span> Golden Jackals</td><td>Stop 10 (Arcade)</td><td>10→11→12→1→…→9</td></tr>
-  <tr><td><span class="pill" style="background:var(--purple)">PURPLE</span> Violet Vultures</td><td>Stop 12 (Lucille's)</td><td>12→1→2→…→11</td></tr>
+  <tr><th>Team</th><th>Release</th><th>Route</th><th>Gauntlet window (est.)</th></tr>
+  <tr><td><span class="pill" style="background:var(--blue)">BLUE</span> Sapphire Scarabs</td><td>T + 0:00</td><td>1 → 18 → finish</td><td>~T+150</td></tr>
+  <tr><td><span class="pill" style="background:var(--red)">RED</span> Crimson Cobras</td><td>T + 5:00</td><td>1 → 18 → finish</td><td>~T+155</td></tr>
+  <tr><td><span class="pill" style="background:var(--green)">GREEN</span> Emerald Ibises</td><td>T + 10:00</td><td>1 → 18 → finish</td><td>~T+165</td></tr>
+  <tr><td><span class="pill" style="background:var(--yellow);color:#3a2c00">GOLD</span> Golden Jackals</td><td>T + 15:00</td><td>1 → 18 → finish</td><td>~T+170</td></tr>
+  <tr><td><span class="pill" style="background:var(--purple)">PURPLE</span> Violet Vultures</td><td>T + 20:00</td><td>1 → 18 → finish</td><td>~T+180</td></tr>
 </table>
-<p><i>Tip: Post a printed clue card at each of the 12 spots so teams can self-verify, and keep one Host roaming for twist cards.</i></p>
+<p><i>Anti-bunching tools: the roaming Sphinx host hands leaders a bonus Twist (distraction), a slow team may "whisker" a hint to catch up, and the Gauntlet Hub can hold a team for a full dramatic recital if the plaza is crowded.</i></p>
 
 <!-- ===================== TWISTS ===================== -->
-<h2 id="twists">6. Quirky Twists (shuffle these in mid-hunt)</h2>
-<div class="twist"><b>🧊 Mummy Freeze:</b> When the Host blows a whistle, EVERYONE freezes like a wrapped mummy for 20 seconds. Last to freeze loses 2 pts; best freeze earns 3 pts.</div>
-<div class="twist"><b>👑 Pharaoh's Swap:</b> Two randomly chosen teams must swap one non-essential item (a hat, a phone case, a shoe) and keep it until the finish. Returning it = +2 each.</div>
+<h2 id="twists">9. Twist Deck <span class="no-print">(host draws these mid-hunt, shuffled — play them often, play them mean, play them silly)</span></h2>
+<div class="twist"><b>🧊 Mummy Freeze:</b> When the host blows a whistle, EVERYONE freezes like a wrapped mummy for 20 seconds. Last to freeze loses 2 pts; best freeze earns 3 pts.</div>
+<div class="twist"><b>👑 Pharaoh's Swap:</b> Two randomly chosen teams must swap one non-essential item (a hat, a phone case, a shoe) and keep it until the finish. Returning it intact = +2 each.</div>
 <div class="twist"><b>🐱 Sphinx Ambush:</b> A roving "Sphinx" (the Host in sunglasses) stops a team and asks a silly riddle, e.g. <i>"What has keys but opens no door, and is full of beans at Arkan?"</i> (Answer: a piano / Coffee Berry). Correct = +2.</div>
-<div class="twist"><b>🤳 Selfie Safari:</b> Three hidden bonus selfie spots (e.g. under the prettiest night-light arch, by the biggest plant, on a red bench). First team to post all 3 = +5.</div>
+<div class="twist"><b>🤳 Selfie Safari:</b> Three hidden bonus selfie spots (e.g. under the prettiest night-light arch, by the biggest plant, on a red bench). First team to show all 3 = +5.</div>
 <div class="twist"><b>🍫 The Dipndip Decoy:</b> At Stop 3, the Host may "lose" the letter and make the team do 5 jumping jacks to "melt the chocolate" and recover it. Pure chaos, 0 points, maximum joy.</div>
+<div class="twist"><b>🐪 Camel Stampede:</b> Host shouts "CAMEL!" — every nearby team drops to their knees and poses as a camel (knee-walk, confused blink). Most committed camel = +3; giggling before the pose = −1 (gentle).</div>
+<div class="twist"><b>🧶 Cleocatra's Hairball:</b> The host secretly hands one team a crumpled gold "hairball." It's worth <b>+4 at the finish</b> — but if another team photographs it in their possession, they may shout "HAIRBALL THEFT!" and steal it (+4 for them, −4 for you). Keep it hidden. Misery loves company.</div>
+<div class="twist"><b> purr… purr… 🎵 The Sacred Purr:</b> The team must purr in unison for 10 full seconds to a bystander's satisfaction. The bystander is the judge. Approval = +2; bystander laughing too hard to judge = +1 anyway, you adorable disasters.</div>
+<div class="twist"><b>🥐 Anti-Gravity Bakery:</b> The team must balance a coin (or a folded note) on their forehead and walk 20 meters to the next checkpoint. Success = +2; dropping it = theatrical slow-motion collapse, −0 (but the replay is priceless).</div>
+<div class="twist"><b>🗣️ The Tourist Trap:</b> The team must teach a willing bystander their full chant, complete with motions. If the bystander performs it for the camera = +3. If the bystander performs it <i>better</i> than the team = +3 and the team buys them a compliment.</div>
+
+<!-- ===================== CURSES ===================== -->
+<h2 id="curses">10. Curse Deck <span class="no-print">(host draws when someone breaks a rule, or when chaos needs seasoning — may be dodged by the Scarab's Shield)</span></h2>
+<div class="curse"><b>🌐 Google Shame:</b> Caught Googling a riddle = <b>−3</b>, and the whole team must announce "WE TRIED TO CHEAT" to the nearest café queue.</div>
+<div class="curse"><b>😼 Meow Law:</b> Until your next stop, you may only communicate with hosts in meows. Slipping into words = <b>−2</b>. (Ordering food counts as communication. Good luck.)</div>
+<div class="curse"><b>🗿 Pharaoh's Silence:</b> No talking at all for 5 minutes — only dramatic hand gestures. A word = <b>−3</b>.</div>
+<div class="curse"><b>🎺 Wrong Chant:</b> Performing another team's chant at a checkpoint = <b>−2</b> and you must adopt their mascot pose for one photo.</div>
+<div class="curse"><b>🙅 Dare Dodge:</b> Refusing a printed dare (safety and dignity exceptions apply) = <b>−5</b>. Cleocatra sees all.</div>
+<div class="curse"><b>🏃 Indoor Sprint:</b> Running indoors, in the garage, or through staff-only doors = <b>−3</b> and a safety lecture delivered in rhyme by the host.</div>
+
+<!-- ===================== SIDE QUESTS ===================== -->
+<h2 id="quests">11. Hidden Side Quests <span class="no-print">(not printed on team sheets — they must explore &amp; eavesdrop; rumor is part of the game)</span></h2>
+<div class="quest"><b>🐾 S1 — The Familiar:</b> Find <b>PetsOffice Arkan</b> and photograph your team pulling faces that match the pets in the window (no tapping the glass, no startling the animals). Host verifies = <b>+3</b>.</div>
+<div class="quest"><b>🍨 S2 — Flavor Oracle:</b> Ask at <b>Stavolta Gelato</b> for the weirdest flavor on the board today. Report it to the host (photo of the menu) = <b>+3</b>. Bonus: if the host agrees it's weird = <b>+4</b>.</div>
+<div class="quest"><b>🐱 S3 — Cleocatra's Claw Marks:</b> Three hidden paw-print stickers are taped around the plaza. Photograph your team with ALL THREE = <b>+5</b> for the first two teams only.</div>
+<div class="quest"><b>🗣️ S4 — Cult Recruitment:</b> Convince a willing bystander (staff or visitor, always polite, always optional) to perform your full team chant on camera = <b>+3</b>.</div>
+<div class="quest"><b>💐 S5 — Human Bouquet:</b> At <b>flower power</b>, arrange your team into a "bouquet" pose with a shop-approved spot (ask first!) and photograph it = <b>+3</b>.</div>
+
+<!-- ===================== RUN OF SHOW ===================== -->
+<h2 id="run">12. Run of Show <span class="no-print">(host's timeline — the hunt is long, so pace it)</span></h2>
+<div class="card no-print">
+<table class="timeline">
+  <tr><th>Time</th><th>What happens</th></tr>
+  <tr><td>T − 60:00</td><td>Hide paw prints, tape Stop Cards at all 18 venues (sealed flaps!), stage Gauntlet Hub, freeze the trophy bag, charge everything.</td></tr>
+  <tr><td>T − 30:00</td><td>Teams arrive: bandanas, treasure pouches, Team Sheets + Trail pages handed out. Chant practice (mandatory, embarrassing).</td></tr>
+  <tr><td>T − 15:00</td><td>Read <b>The Story</b> aloud. Explain rules, hints, safety word ("SPHYNX!"), photo proof, and the no-Googling curse.</td></tr>
+  <tr><td>T + 0:00</td><td><b>Blue released at Stop 1.</b> Red at +5, Green at +10, Gold at +15, Purple at +20.</td></tr>
+  <tr><td>T + 0 → 2:30</td><td><b>ACT I</b> — hosts roam; Twist cards every ~20 minutes; side quests happen whenever teams discover them. Award points on the live scoreboard as initials land.</td></tr>
+  <tr><td>T + 2:30 → 3:00</td><td><b>Nine Lives Gauntlet</b> — teams arrive staggered, draw cards, get Act II envelopes. (Eat something. You've earned it.)</td></tr>
+  <tr><td>T + 3:00 → 4:15</td><td><b>ACT II</b> — Cat Taxes are verified by photo; points are bigger; the Hairball may change hands.</td></tr>
+  <tr><td>First finisher</td><td>Verify all 18 letters → Finish Bonus (+10/+6/+3) → clock stops for them; others keep hunting.</td></tr>
+  <tr><td>T + 4:30 (hard stop)</td><td>Scoreboard frozen. Tally, tie-breaker chant-off, prizes, group photo at the courtyard.</td></tr>
+</table>
+</div>
 
 <!-- ===================== FINALE ===================== -->
-<h2 id="finale">7. Finale &amp; Prizes</h2>
+<h2 id="finale">13. Finale &amp; Prizes</h2>
 <div class="card">
-<p>When a team returns to <b>Stop 1 (the Fountain)</b> with all 12 letters, the Host checks the spelling: <b>G · O · L · D · E · N · G · E · L · A · T · O</b>.</p>
-<p>Cleocatra's decree is read: <i>"Golden Gelato! The goblet was never lost — it was the hunt itself. But winners get the real thing."</i> Hand the champions the <b>Golden Gelato Goblet</b> (a trophy + Dipndip gelato for all) and the last-place team receives <b>"Cleocatra's Curse"</b> — a rubber chicken and the honor of planning next year's hunt.</p>
-<p><b>Prize ideas:</b> engraved "Golden Gelato Goblet" trophy 🏆 • Dipndip chocolate vouchers 🍫 • team-color crowns 👑 • a group photo with the fountain lit up at night 📸.</p>
+<p>When a team returns to <b>Stop 1 (the courtyard)</b> with all 18 letters, the Host checks the three words: <b>G · O · L · D · E · N &nbsp;· &nbsp;G · E · L · A · T · O &nbsp;· &nbsp;G · O · B · L · E · T</b>.</p>
+<p>Cleocatra's decree is read: <i>"Golden Gelato Goblet. Now — where does a golden gelato goblet live? Where the gelato lives, obviously. Look in the freezer, you beautiful idiots."</i> The host produces the <b>frozen trophy bag</b> (prepared in Setup) and hands over the Golden Gelato Goblet. 🏆</p>
+<p><b>Prize pyramid — everyone gets something, because Cleocatra is spiteful but not heartless:</b></p>
+<table>
+  <tr><th>Place</th><th>Prize</th></tr>
+  <tr><td>🥇 1st</td><td>The <b>Golden Gelato Goblet</b> trophy + gelato vouchers (Stavolta or Dipndip) + eternal plaza glory</td></tr>
+  <tr><td>🥈 2nd</td><td>Dipndip chocolate vouchers + the right to plan one twist of next year's hunt</td></tr>
+  <tr><td>🥉 3rd</td><td>A family box of pastries from TBS / Paul</td></tr>
+  <tr><td>4th</td><td><b>"Semi-Frozen Spoons"</b> — two big spoons and a tub of ice cream to eat immediately</td></tr>
+  <tr><td>5th</td><td><b>"Cleocatra's Curse"</b> — a rubber chicken, a feather boa, and the honor of hosting next year's hunt</td></tr>
+  <tr><td>Everyone</td><td>Group photo at the fountain with the winners holding the goblet aloft like a World Cup</td></tr>
+</table>
 </div>
 
 <!-- ===================== HOST KEY ===================== -->
-<h2 id="key">8. Host Answer Key <span class="spoiler-note">(SPOILERS — don't show players)</span></h2>
+<h2 id="key">14. Host Answer Key <span class="spoiler-note">(SPOILERS — never hand this page to a team)</span></h2>
 <div class="key">
-  <h3>Letter order → secret word</h3>
-  <p>1:G &nbsp; 2:O &nbsp; 3:L &nbsp; 4:D &nbsp; 5:E &nbsp; 6:N &nbsp; 7:G &nbsp; 8:E &nbsp; 9:L &nbsp; 10:A &nbsp; 11:T &nbsp; 12:O</p>
-  <p><b>G O L D E N G E L A T O</b> = "GOLDEN GELATO" → the goblet is frozen gold, revealed at the fountain.</p>
-  <h3>Stop → correct location (for verifying riddles)</h3>
-  <p>1 Fountain/central water feature &nbsp;•&nbsp; 2 Paul (French bakery) &nbsp;•&nbsp; 3 Dipndip (chocolate)<br>
-  4 Cinema (3D/VIP) &nbsp;•&nbsp; 5 Kazoku (Japanese/Asian) &nbsp;•&nbsp; 6 Zooba (Egyptian street food)<br>
-  7 Gourmet Food Market &nbsp;•&nbsp; 8 Crowne Plaza Hotel (IHG) &nbsp;•&nbsp; 9 Jones the Grocer (Australian)<br>
-  10 Arcade &nbsp;•&nbsp; 11 Coffee Berry &nbsp;•&nbsp; 12 Lucille's Diner (American)</p>
+  <h3>Letter order → the three words</h3>
+  <p>ACT I — 1:G 2:O 3:L 4:D 5:E 6:N &nbsp;|&nbsp; 7:G 8:E 9:L 10:A 11:T 12:O &nbsp;→&nbsp; <b>GOLDEN GELATO</b></p>
+  <p>ACT II — 13:G 14:O 15:B 16:L 17:E 18:T &nbsp;→&nbsp; <b>GOBLET</b></p>
+  <p><b>GOLDEN GELATO GOBLET</b> → the reveal: a gelato goblet lives where gelato lives — the frozen trophy bag at the courtyard (or the agreed gelato counter).</p>
+  <h3>Stop → correct venue (for verifying riddles)</h3>
+  <p>1 Fountain/Main Courtyard &nbsp;•&nbsp; 2 Paul &nbsp;•&nbsp; 3 Dipndip &nbsp;•&nbsp; 4 Cima Arkan (cinema)<br>
+  5 Kazoku &nbsp;•&nbsp; 6 Zooba &nbsp;•&nbsp; 7 Corners Market &nbsp;•&nbsp; 8 Crowne Plaza West Cairo Arkan<br>
+  9 Jones the Grocer &nbsp;•&nbsp; 10 Arcade / Play N Trade &nbsp;•&nbsp; 11 Coffee Berry &nbsp;•&nbsp; 12 Lucille's<br>
+  13 Gigi's &nbsp;•&nbsp; 14 Osana Family Wellness Café &nbsp;•&nbsp; 15 TBS (The Bakery Shop)<br>
+  16 Leila Min Lebnen &nbsp;•&nbsp; 17 Eatery &nbsp;•&nbsp; 18 Ted's</p>
+  <h3 id="gkey">§G — Gauntlet answers</h3>
+  <p><b>Sphinx riddles (Card 2):</b> "keys but opens no door, full of beans" → <b>a piano</b> (or Coffee Berry, accept both) • "more you take, more you leave" → <b>footprints</b> • "wetter the more it dries" → <b>a towel</b> • "cities without houses, water without fish" → <b>a map</b> • "head and tail, no body" → <b>a coin</b>.</p>
+  <p><b>Canopic Jar Quiz (Card 4) — need 4/5:</b> ① Which pharaoh's pyramid stands at Giza? → <b>Khufu (Cheops)</b> ② How many lives does a cat have? → <b>9</b> ③ How many screens does Cima Arkan have? → <b>7</b> ④ How many teams hunt today? → <b>5</b> ⑤ What does "yalla" mean? → <b>let's go / hurry up</b> ⑥ Cleopatra was Greek, not Egyptian — <b>true</b> (tie-breaker).</p>
   <h3>Quick scoring tally</h3>
-  <p>12 stops × (5 riddle + 5 dare) = 120 &nbsp;+&nbsp; up to ~16 bonus &nbsp;+&nbsp; twist points &nbsp;+&nbsp; 10 finish.</p>
+  <p>Act I: 12 × (5+5) = 120 &nbsp;•&nbsp; Act II: 6 × (8+8) = 96 &nbsp;•&nbsp; Gauntlet: 10–13 &nbsp;•&nbsp;★ bonuses ≈ 25 &nbsp;•&nbsp; side quests ≈ 20 &nbsp;•&nbsp; twists ±30 &nbsp;•&nbsp; finish 10/6/3 &nbsp;→ <b>≈ 300 max</b>.</p>
+  <h3>Host cheat phrases</h3>
+  <p>"SPHYNX!" = freeze and listen • "Cleocatra sends her regards" = you owe −2 • "The cat tax is non-negotiable" = do the dare.</p>
 </div>
 
 <!-- ===================== TEAM SHEETS ===================== -->
-<h2 id="sheets">9. Printable Team Sheets <span class="no-print">(print this page, one per team)</span></h2>
-<p class="no-print">Each team gets this cut-out sheet with their clue list. The Host keeps Section 8 hidden.</p>
+<h2 id="sheets">15. Printable Team Sheets <span class="no-print">(print one per team — blank letters, blanks for initials &amp; photos)</span></h2>
+<p class="no-print">Each team gets their sheet + the Trail pages (riddles without letters). The Host keeps Section 14 hidden and carries the decks.</p>
 
 <div class="teamsheet">
-  <h3 style="margin-top:0">🟦 THE SAPPHIRE SCARABS — Clue Sheet</h3>
-  <p><b>Chant:</b> "Roll it, roll it, scarab style — we shine bluer than the Nile!"</p>
-  <p><b>Start:</b> Stop 1 (Fountain). Visit in order, wrap 12→1. Collect a letter + Host initials at each.</p>
+  <h3 style="margin-top:0">🟦 THE SAPPHIRE SCARABS — Team Sheet</h3>
+  <p><b>Chant:</b> "Roll it, roll it, scarab style — we shine bluer than the Nile!" &nbsp;|&nbsp; <b>Blessing:</b> ignore first Curse card &nbsp;|&nbsp; <b>Release:</b> T+0:00</p>
   <ol class="checklist">
-    <li>1 Fountain — <b>G</b> ___ initials ___ photo ___</li>
-    <li>2 Paul — <b>O</b> ___ initials ___ photo ___</li>
-    <li>3 Dipndip — <b>L</b> ___ initials ___ photo ___</li>
-    <li>4 Cinema — <b>D</b> ___ initials ___ photo ___</li>
-    <li>5 Kazoku — <b>E</b> ___ initials ___ photo ___</li>
-    <li>6 Zooba — <b>N</b> ___ initials ___ photo ___</li>
-    <li>7 Gourmet Market — <b>G</b> ___ initials ___ photo ___</li>
-    <li>8 Crowne Plaza — <b>E</b> ___ initials ___ photo ___</li>
-    <li>9 Jones the Grocer — <b>L</b> ___ initials ___ photo ___</li>
-    <li>10 Arcade — <b>A</b> ___ initials ___ photo ___</li>
-    <li>11 Coffee Berry — <b>T</b> ___ initials ___ photo ___</li>
-    <li>12 Lucille's — <b>O</b> ___ initials ___ photo ___</li>
+    <li>1 Fountain/Courtyard — letter ___ initials ___ photo ___</li>
+    <li>2 Paul — letter ___ initials ___ photo ___</li>
+    <li>3 Dipndip — letter ___ initials ___ photo ___</li>
+    <li>4 Cima Arkan — letter ___ initials ___ photo ___</li>
+    <li>5 Kazoku — letter ___ initials ___ photo ___</li>
+    <li>6 Zooba — letter ___ initials ___ photo ___</li>
+    <li>7 Corners Market — letter ___ initials ___ photo ___</li>
+    <li>8 Crowne Plaza — letter ___ initials ___ photo ___</li>
+    <li>9 Jones the Grocer — letter ___ initials ___ photo ___</li>
+    <li>10 Arcade / Play N Trade — letter ___ initials ___ photo ___</li>
+    <li>11 Coffee Berry — letter ___ initials ___ photo ___</li>
+    <li>12 Lucille's — letter ___ initials ___ photo ___</li>
+    <li><b>★ GAUNTLET</b> (Theatro courtyard) — card drawn: ___________ pass? ___ bonus? ___</li>
+    <li>13 Gigi's (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>14 Osana (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>15 TBS (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>16 Leila Min Lebnen (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>17 Eatery (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>18 Ted's (Cat Tax) — letter ___ initials ___ photo ___</li>
   </ol>
-  <p><b>My letters:</b> _ _ _ _ _ _ _ _ _ _ _ _ &nbsp;→&nbsp; <b>Spell:</b> ____________</p>
-  <p><b>Back to the fountain! 🐱🍦</b></p>
+  <p><b>My letters:</b> _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;→&nbsp; <b>Three words:</b> __________ __________ __________</p>
+  <p><b>RUN to the courtyard! 🐱🍦</b> &nbsp; Hint tokens left: ☐ &nbsp; Side quests done: S1☐ S2☐ S3☐ S4☐ S5☐</p>
 </div>
 
 <div class="teamsheet">
-  <h3 style="margin-top:0">🟥 THE CRIMSON COBRAS — Clue Sheet</h3>
-  <p><b>Chant:</b> "Hiss, snap, strike — red cobras never strike out!"</p>
-  <p><b>Start:</b> Stop 4 (Cinema). Visit 4→5→…→12→1→2→3. Collect a letter + Host initials at each.</p>
+  <h3 style="margin-top:0">🟥 THE CRIMSON COBRAS — Team Sheet</h3>
+  <p><b>Chant:</b> "Hiss, snap, strike — red cobras never strike out!" &nbsp;|&nbsp; <b>Blessing:</b> redo one failed dare &nbsp;|&nbsp; <b>Release:</b> T+5:00</p>
   <ol class="checklist">
-    <li>4 Cinema — <b>D</b> ___ initials ___ photo ___</li>
-    <li>5 Kazoku — <b>E</b> ___ initials ___ photo ___</li>
-    <li>6 Zooba — <b>N</b> ___ initials ___ photo ___</li>
-    <li>7 Gourmet Market — <b>G</b> ___ initials ___ photo ___</li>
-    <li>8 Crowne Plaza — <b>E</b> ___ initials ___ photo ___</li>
-    <li>9 Jones the Grocer — <b>L</b> ___ initials ___ photo ___</li>
-    <li>10 Arcade — <b>A</b> ___ initials ___ photo ___</li>
-    <li>11 Coffee Berry — <b>T</b> ___ initials ___ photo ___</li>
-    <li>12 Lucille's — <b>O</b> ___ initials ___ photo ___</li>
-    <li>1 Fountain — <b>G</b> ___ initials ___ photo ___</li>
-    <li>2 Paul — <b>O</b> ___ initials ___ photo ___</li>
-    <li>3 Dipndip — <b>L</b> ___ initials ___ photo ___</li>
+    <li>1 Fountain/Courtyard — letter ___ initials ___ photo ___</li>
+    <li>2 Paul — letter ___ initials ___ photo ___</li>
+    <li>3 Dipndip — letter ___ initials ___ photo ___</li>
+    <li>4 Cima Arkan — letter ___ initials ___ photo ___</li>
+    <li>5 Kazoku — letter ___ initials ___ photo ___</li>
+    <li>6 Zooba — letter ___ initials ___ photo ___</li>
+    <li>7 Corners Market — letter ___ initials ___ photo ___</li>
+    <li>8 Crowne Plaza — letter ___ initials ___ photo ___</li>
+    <li>9 Jones the Grocer — letter ___ initials ___ photo ___</li>
+    <li>10 Arcade / Play N Trade — letter ___ initials ___ photo ___</li>
+    <li>11 Coffee Berry — letter ___ initials ___ photo ___</li>
+    <li>12 Lucille's — letter ___ initials ___ photo ___</li>
+    <li><b>★ GAUNTLET</b> (Theatro courtyard) — card drawn: ___________ pass? ___ bonus? ___</li>
+    <li>13 Gigi's (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>14 Osana (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>15 TBS (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>16 Leila Min Lebnen (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>17 Eatery (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>18 Ted's (Cat Tax) — letter ___ initials ___ photo ___</li>
   </ol>
-  <p><b>My letters:</b> _ _ _ _ _ _ _ _ _ _ _ _ &nbsp;→&nbsp; <b>Spell:</b> ____________</p>
-  <p><b>Back to the fountain! 🐱🍦</b></p>
+  <p><b>My letters:</b> _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;→&nbsp; <b>Three words:</b> __________ __________ __________</p>
+  <p><b>RUN to the courtyard! 🐱🍦</b> &nbsp; Hint tokens left: ☐ &nbsp; Side quests done: S1☐ S2☐ S3☐ S4☐ S5☐</p>
 </div>
 
 <div class="teamsheet">
-  <h3 style="margin-top:0">🟩 THE EMERALD IBISES — Clue Sheet</h3>
-  <p><b>Chant:</b> "Quill and beak, we're super wise — Emerald Ibises win the prize!"</p>
-  <p><b>Start:</b> Stop 7 (Gourmet Market). Visit 7→8→…→12→1→…→6. Collect a letter + Host initials at each.</p>
+  <h3 style="margin-top:0">🟩 THE EMERALD IBISES — Team Sheet</h3>
+  <p><b>Chant:</b> "Quill and beak, we're super wise — Emerald Ibises win the prize!" &nbsp;|&nbsp; <b>Blessing:</b> 2 free hints &nbsp;|&nbsp; <b>Release:</b> T+10:00</p>
   <ol class="checklist">
-    <li>7 Gourmet Market — <b>G</b> ___ initials ___ photo ___</li>
-    <li>8 Crowne Plaza — <b>E</b> ___ initials ___ photo ___</li>
-    <li>9 Jones the Grocer — <b>L</b> ___ initials ___ photo ___</li>
-    <li>10 Arcade — <b>A</b> ___ initials ___ photo ___</li>
-    <li>11 Coffee Berry — <b>T</b> ___ initials ___ photo ___</li>
-    <li>12 Lucille's — <b>O</b> ___ initials ___ photo ___</li>
-    <li>1 Fountain — <b>G</b> ___ initials ___ photo ___</li>
-    <li>2 Paul — <b>O</b> ___ initials ___ photo ___</li>
-    <li>3 Dipndip — <b>L</b> ___ initials ___ photo ___</li>
-    <li>4 Cinema — <b>D</b> ___ initials ___ photo ___</li>
-    <li>5 Kazoku — <b>E</b> ___ initials ___ photo ___</li>
-    <li>6 Zooba — <b>N</b> ___ initials ___ photo ___</li>
+    <li>1 Fountain/Courtyard — letter ___ initials ___ photo ___</li>
+    <li>2 Paul — letter ___ initials ___ photo ___</li>
+    <li>3 Dipndip — letter ___ initials ___ photo ___</li>
+    <li>4 Cima Arkan — letter ___ initials ___ photo ___</li>
+    <li>5 Kazoku — letter ___ initials ___ photo ___</li>
+    <li>6 Zooba — letter ___ initials ___ photo ___</li>
+    <li>7 Corners Market — letter ___ initials ___ photo ___</li>
+    <li>8 Crowne Plaza — letter ___ initials ___ photo ___</li>
+    <li>9 Jones the Grocer — letter ___ initials ___ photo ___</li>
+    <li>10 Arcade / Play N Trade — letter ___ initials ___ photo ___</li>
+    <li>11 Coffee Berry — letter ___ initials ___ photo ___</li>
+    <li>12 Lucille's — letter ___ initials ___ photo ___</li>
+    <li><b>★ GAUNTLET</b> (Theatro courtyard) — card drawn: ___________ pass? ___ bonus? ___</li>
+    <li>13 Gigi's (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>14 Osana (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>15 TBS (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>16 Leila Min Lebnen (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>17 Eatery (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>18 Ted's (Cat Tax) — letter ___ initials ___ photo ___</li>
   </ol>
-  <p><b>My letters:</b> _ _ _ _ _ _ _ _ _ _ _ _ &nbsp;→&nbsp; <b>Spell:</b> ____________</p>
-  <p><b>Back to the fountain! 🐱🍦</b></p>
+  <p><b>My letters:</b> _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;→&nbsp; <b>Three words:</b> __________ __________ __________</p>
+  <p><b>RUN to the courtyard! 🐱🍦</b> &nbsp; Hint tokens left: ☐ ☐ &nbsp; Side quests done: S1☐ S2☐ S3☐ S4☐ S5☐</p>
 </div>
 
 <div class="teamsheet">
-  <h3 style="margin-top:0">🟨 THE GOLDEN JACKALS — Clue Sheet</h3>
-  <p><b>Chant:</b> "Anubis guide, jackals gold — we sniff out treats like legends told!"</p>
-  <p><b>Start:</b> Stop 10 (Arcade). Visit 10→11→12→1→…→9. Collect a letter + Host initials at each.</p>
+  <h3 style="margin-top:0">🟨 THE GOLDEN JACKALS — Team Sheet</h3>
+  <p><b>Chant:</b> "Anubis guide, jackals gold — we sniff out treats like legends told!" &nbsp;|&nbsp; <b>Blessing:</b> one free nudge &nbsp;|&nbsp; <b>Release:</b> T+15:00</p>
   <ol class="checklist">
-    <li>10 Arcade — <b>A</b> ___ initials ___ photo ___</li>
-    <li>11 Coffee Berry — <b>T</b> ___ initials ___ photo ___</li>
-    <li>12 Lucille's — <b>O</b> ___ initials ___ photo ___</li>
-    <li>1 Fountain — <b>G</b> ___ initials ___ photo ___</li>
-    <li>2 Paul — <b>O</b> ___ initials ___ photo ___</li>
-    <li>3 Dipndip — <b>L</b> ___ initials ___ photo ___</li>
-    <li>4 Cinema — <b>D</b> ___ initials ___ photo ___</li>
-    <li>5 Kazoku — <b>E</b> ___ initials ___ photo ___</li>
-    <li>6 Zooba — <b>N</b> ___ initials ___ photo ___</li>
-    <li>7 Gourmet Market — <b>G</b> ___ initials ___ photo ___</li>
-    <li>8 Crowne Plaza — <b>E</b> ___ initials ___ photo ___</li>
-    <li>9 Jones the Grocer — <b>L</b> ___ initials ___ photo ___</li>
+    <li>1 Fountain/Courtyard — letter ___ initials ___ photo ___</li>
+    <li>2 Paul — letter ___ initials ___ photo ___</li>
+    <li>3 Dipndip — letter ___ initials ___ photo ___</li>
+    <li>4 Cima Arkan — letter ___ initials ___ photo ___</li>
+    <li>5 Kazoku — letter ___ initials ___ photo ___</li>
+    <li>6 Zooba — letter ___ initials ___ photo ___</li>
+    <li>7 Corners Market — letter ___ initials ___ photo ___</li>
+    <li>8 Crowne Plaza — letter ___ initials ___ photo ___</li>
+    <li>9 Jones the Grocer — letter ___ initials ___ photo ___</li>
+    <li>10 Arcade / Play N Trade — letter ___ initials ___ photo ___</li>
+    <li>11 Coffee Berry — letter ___ initials ___ photo ___</li>
+    <li>12 Lucille's — letter ___ initials ___ photo ___</li>
+    <li><b>★ GAUNTLET</b> (Theatro courtyard) — card drawn: ___________ pass? ___ bonus? ___</li>
+    <li>13 Gigi's (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>14 Osana (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>15 TBS (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>16 Leila Min Lebnen (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>17 Eatery (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>18 Ted's (Cat Tax) — letter ___ initials ___ photo ___</li>
   </ol>
-  <p><b>My letters:</b> _ _ _ _ _ _ _ _ _ _ _ _ &nbsp;→&nbsp; <b>Spell:</b> ____________</p>
-  <p><b>Back to the fountain! 🐱🍦</b></p>
+  <p><b>My letters:</b> _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;→&nbsp; <b>Three words:</b> __________ __________ __________</p>
+  <p><b>RUN to the courtyard! 🐱🍦</b> &nbsp; Hint tokens left: ☐ &nbsp; Side quests done: S1☐ S2☐ S3☐ S4☐ S5☐</p>
 </div>
 
 <div class="teamsheet">
-  <h3 style="margin-top:0">🟪 THE VIOLET VULTURES — Clue Sheet</h3>
-  <p><b>Chant:</b> "Circle high, swoop down low — Violet Vultures steal the show!" (flap arms)</p>
-  <p><b>Start:</b> Stop 12 (Lucille's). Visit 12→1→2→…→11. Collect a letter + Host initials at each.</p>
+  <h3 style="margin-top:0">🟪 THE VIOLET VULTURES — Team Sheet</h3>
+  <p><b>Chant:</b> "Circle high, swoop down low — Violet Vultures steal the show!" (flap arms) &nbsp;|&nbsp; <b>Blessing:</b> bank one Twist card &nbsp;|&nbsp; <b>Release:</b> T+20:00</p>
   <ol class="checklist">
-    <li>12 Lucille's — <b>O</b> ___ initials ___ photo ___</li>
-    <li>1 Fountain — <b>G</b> ___ initials ___ photo ___</li>
-    <li>2 Paul — <b>O</b> ___ initials ___ photo ___</li>
-    <li>3 Dipndip — <b>L</b> ___ initials ___ photo ___</li>
-    <li>4 Cinema — <b>D</b> ___ initials ___ photo ___</li>
-    <li>5 Kazoku — <b>E</b> ___ initials ___ photo ___</li>
-    <li>6 Zooba — <b>N</b> ___ initials ___ photo ___</li>
-    <li>7 Gourmet Market — <b>G</b> ___ initials ___ photo ___</li>
-    <li>8 Crowne Plaza — <b>E</b> ___ initials ___ photo ___</li>
-    <li>9 Jones the Grocer — <b>L</b> ___ initials ___ photo ___</li>
-    <li>10 Arcade — <b>A</b> ___ initials ___ photo ___</li>
-    <li>11 Coffee Berry — <b>T</b> ___ initials ___ photo ___</li>
+    <li>1 Fountain/Courtyard — letter ___ initials ___ photo ___</li>
+    <li>2 Paul — letter ___ initials ___ photo ___</li>
+    <li>3 Dipndip — letter ___ initials ___ photo ___</li>
+    <li>4 Cima Arkan — letter ___ initials ___ photo ___</li>
+    <li>5 Kazoku — letter ___ initials ___ photo ___</li>
+    <li>6 Zooba — letter ___ initials ___ photo ___</li>
+    <li>7 Corners Market — letter ___ initials ___ photo ___</li>
+    <li>8 Crowne Plaza — letter ___ initials ___ photo ___</li>
+    <li>9 Jones the Grocer — letter ___ initials ___ photo ___</li>
+    <li>10 Arcade / Play N Trade — letter ___ initials ___ photo ___</li>
+    <li>11 Coffee Berry — letter ___ initials ___ photo ___</li>
+    <li>12 Lucille's — letter ___ initials ___ photo ___</li>
+    <li><b>★ GAUNTLET</b> (Theatro courtyard) — card drawn: ___________ pass? ___ bonus? ___</li>
+    <li>13 Gigi's (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>14 Osana (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>15 TBS (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>16 Leila Min Lebnen (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>17 Eatery (Cat Tax) — letter ___ initials ___ photo ___</li>
+    <li>18 Ted's (Cat Tax) — letter ___ initials ___ photo ___</li>
   </ol>
-  <p><b>My letters:</b> _ _ _ _ _ _ _ _ _ _ _ _ &nbsp;→&nbsp; <b>Spell:</b> ____________</p>
-  <p><b>Back to the fountain! 🐱🍦</b></p>
+  <p><b>My letters:</b> _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;|&nbsp; _ _ _ _ _ _ &nbsp;→&nbsp; <b>Three words:</b> __________ __________ __________</p>
+  <p><b>RUN to the courtyard! 🐱🍦</b> &nbsp; Hint tokens left: ☐ &nbsp; Side quests done: S1☐ S2☐ S3☐ S4☐ S5☐</p>
+</div>
+
+<!-- ===================== STOP CARDS ===================== -->
+<h2 id="cards">16. Printable Stop Cards ×18 <span class="no-print">(cut, fold the letter under the gold flap, tape at the venue — or hand to café staff with a smile)</span></h2>
+<p class="no-print">Teams solve the riddle, say the venue aloud (or show this card's flap is still sealed), do the dare, get initials — <b>then</b> peel the flap. For Act II, the Cat Tax must be photographed before peeling.</p>
+
+<div class="stopgrid no-print">
+
+<div class="stopcard"><b class="sc-num">STOP 1</b><span class="sc-loc">The Grand Fountain &amp; Main Courtyard</span>
+<i>"I am the pulse where Arkan's veins all meet, where water leaps and strangers greet."</i>
+<b>Dare:</b> pointing-huddle photo · ★ shout an absurd fountain name 3× (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 2</b><span class="sc-loc">Paul — French Bakery &amp; Café</span>
+<i>"From Paris I came with butter and pride, my croissants flake on the Egyptian side."</i>
+<b>Dare:</b> invisible-croissant mime photo · ★ "Bonjour Arkan!" accent (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 3</b><span class="sc-loc">Dipndip — Chocolate Lab</span>
+<i>"I dip, I drip, I melt with glee, chocolate crepes are the key to me."</i>
+<b>Dare:</b> chocolate-fountain statue, 10s · ★ air-lick a strawberry (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 4</b><span class="sc-loc">Cima Arkan — Cinema</span>
+<i>"Seven halls and a VIP throne, the loudest silence the west side has known."</i>
+<b>Dare:</b> red-carpet pose + trailer-voice intro · ★ popcorn-explosion jump (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 5</b><span class="sc-loc">Kazoku — Japanese / Asian</span>
+<i>"From the land where the sun climbs high, I roll my rice and let flavors fly."</i>
+<b>Dare:</b> samurai bow + synchronized konnichiwa · ★ correct Japanese food word (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 6</b><span class="sc-loc">Zooba — Egyptian Street Food</span>
+<i>"I'm Egypt on a plate with a street-food crown: taameya crisp and koshari brown."</i>
+<b>Dare:</b> the baladi bounce photo · ★ shout &amp; translate "Yalla!" (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 7</b><span class="sc-loc">Corners Market — Gourmet Corner</span>
+<i>"My name has corners but I'm no square — I'm packed with treats beyond compare."</i>
+<b>Dare:</b> each member photo-quests one weird food item · ★ name a rival's item (+2)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 8</b><span class="sc-loc">Crowne Plaza West Cairo Arkan</span>
+<i>"A crown of rest where travelers stay, pillows and lobbies guard the day."</i>
+<b>Dare:</b> quiet royal bow at the entrance · ★ 10s Pharaoh acceptance speech (+2)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 9</b><span class="sc-loc">Jones the Grocer — Australian</span>
+<i>"A grocer from down under with a baker's heart, fresh bread and deli are my fine art."</i>
+<b>Dare:</b> dramatic bread-smelling photo · ★ "G'day, one meat pie, mate." (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 10</b><span class="sc-loc">The Arcade / Play N Trade</span>
+<i>"Beeps, blips, and tickets to win; I light up faces with a playful grin."</i>
+<b>Dare:</b> team game-face photo · ★ high-score victory dance (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 11</b><span class="sc-loc">Coffee Berry</span>
+<i>"Bean and brew to wake the soul, I keep tired explorers whole."</i>
+<b>Dare:</b> invisible-coffee toast photo · ★ synchronized order chant (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 12</b><span class="sc-loc">Lucille's Diner — American</span>
+<i>"Pancakes stacked to the desert sky, diner style with a wink and a sigh."</i>
+<b>Dare:</b> diner-whistle pose · ★ fake-American "Hey darlin', refill please!" (+1)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 13 · ACT II</b><span class="sc-loc">Gigi's — Burger Legend</span>
+<i>"Named after a legend of burger fame, one bite and the plaza knows my name."</i>
+<b>Cat Tax:</b> Scaredy-Cat Arch, mid-hiss, 3s — photo · ★ dramatic signature-burger name (+2)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 14 · ACT II</b><span class="sc-loc">Osana Family Wellness Café</span>
+<i>"Smoothies, stretches, and a zen-ish zen, wellness is my religion and I'm its den."</i>
+<b>Cat Tax:</b> cat yoga flow, 5s — photo · ★ whisper your aura color (+2)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 15 · ACT II</b><span class="sc-loc">TBS — The Bakery Shop</span>
+<i>"Three letters on my sign, but forty doughs are mine."</i>
+<b>Cat Tax:</b> Human Croissant spiral from above — photo · ★ French-baker laugh (+2)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 16 · ACT II</b><span class="sc-loc">Leila Min Lebnen — Lebanese</span>
+<i>"From Lebanon with love and mezze grand, hummus mountains in a garlicky land."</i>
+<b>Cat Tax:</b> Hummus Facial pose — photo · ★ "Yalla habibi!" in sync (+2)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 17 · ACT II</b><span class="sc-loc">Eatery — International, Open Kitchen</span>
+<i>"Sushi, pasta, steak, and pie, my open kitchen lets you watch them fry."</i>
+<b>Cat Tax:</b> Foodie Faint — photo · ★ 10s snooty food review (+2)</div>
+
+<div class="stopcard"><b class="sc-num">STOP 18 · ACT II</b><span class="sc-loc">Ted's — All-Day Breakfast &amp; Bakery</span>
+<i>"All-day breakfast and pastries divine, I'm the last stop in this feline design."</i>
+<b>Cat Tax:</b> Pancake Stack hands + syrup pour — photo · ★ trailer-voice "GOBLET!" (+2)</div>
+
+</div>
+
+<p class="no-print spoiler-note">Letter flaps (host only, in order): 1 G · 2 O · 3 L · 4 D · 5 E · 6 N · 7 G · 8 E · 9 L · 10 A · 11 T · 12 O · 13 G · 14 O · 15 B · 16 L · 17 E · 18 T — write the letter under each flap when you fold the cards.</p>
+
+<!-- ===================== BACKUP ===================== -->
+<h2 id="backup">17. Backup Venues, Rain Plan &amp; Express Version</h2>
+<div class="card">
+<h3>Spot closed / under maintenance? Swap, don't stop:</h3>
+<table>
+  <tr><th>Stop</th><th>Backup 1</th><th>Backup 2</th></tr>
+  <tr><td>2 Paul</td><td>Ladurée / Willow's</td><td>TBS (then move Stop 15)</td></tr>
+  <tr><td>3 Dipndip</td><td>Stavolta Gelato</td><td>Coffee Berry counter</td></tr>
+  <tr><td>4 Cima</td><td>Theatro Arkan steps (dramatic-faint tour)</td><td>Arcade / Play N Trade</td></tr>
+  <tr><td>5 Kazoku</td><td>Miss Li Lee's (Asian, in Arkan)</td><td>Eatery (then move Stop 17)</td></tr>
+  <tr><td>6 Zooba</td><td>Al Beiruti / Baladina</td><td>Crave</td></tr>
+  <tr><td>7 Corners Market</td><td>Pepenero</td><td>Crave</td></tr>
+  <tr><td>8 Crowne Plaza</td><td>Hotel lobby doorway (ask reception)</td><td>Theatro Arkan exterior</td></tr>
+  <tr><td>9 Jones the Grocer</td><td>Charwood's</td><td>Longhorn Texas BBQ</td></tr>
+  <tr><td>10 Arcade</td><td>Play N Trade Egypt</td><td>Cima lobby machines</td></tr>
+  <tr><td>11 Coffee Berry</td><td>Starbucks / Harris Café</td><td>Nav</td></tr>
+  <tr><td>12 Lucille's</td><td>Crave</td><td>Willow's</td></tr>
+  <tr><td>13 Gigi's</td><td>Butcher's Burger</td><td>La Carne</td></tr>
+  <tr><td>14 Osana</td><td>Caracas café</td><td>Harris Café (quiet corner)</td></tr>
+  <tr><td>15 TBS</td><td>Paul (bakery counter)</td><td>Jones the Grocer bakery</td></tr>
+  <tr><td>16 Leila Min Lebnen</td><td>Al Beiruti</td><td>Baladina</td></tr>
+  <tr><td>17 Eatery</td><td>Pepenero</td><td>Il Loft</td></tr>
+  <tr><td>18 Ted's</td><td>Mince / La Carne</td><td>Casa Talia</td></tr>
+</table>
+<h3>🌧 Rain / extreme heat plan</h3>
+<ul>
+  <li>Move the Gauntlet Hub under cover (hotel lobby edge or cinema foyer — ask first).</li>
+  <li>Shorten rests, keep dares to 10 seconds, and let teams claim a bonus +2 for "weather heroism."</li>
+  <li>Indoor-first routing: cinema → arcade → market → bakery row → hotel → restaurants. The trail order stays the same; only where photos happen shifts indoors.</li>
+  <li>Full cancellation: run the <b>Express Hunt</b> below on another date — everyone keeps their letters and grudges.</li>
+</ul>
+<h3>⚡ Express Version (~2.5 hours)</h3>
+<p>Stops <b>1–12 only</b> (Act I), then a single Gauntlet card each, then straight to the finale with <b>GOLDEN GELATO</b> as the phrase (12 letters, same sheet, skip lines 13–18). Twist deck still in play. Same prizes, less sweat.</p>
 </div>
 
 <div class="footnote">
-  Built for Arkan Plaza, Sheikh Zayed, Giza — an open-air lifestyle &amp; dining destination (150+ shops, fountain courtyards, cinema, arcade, Crowne Plaza hotel, and a chocolatey Dipndip). Times, venues, and the mischievous cat are real enough for a great afternoon. Adjust stops to what's open on your hunt day. 🐱🍦
+  Built for Arkan Plaza, Sheikh Zayed, Giza — an open-air lifestyle &amp; dining destination (150+ concepts, courtyard, Cima cinema, Theatro Arkan, Crowne Plaza hotel, arcades, and an alarming number of ways to eat chocolate). All venues listed are real Arkan Plaza tenants as of writing — double-check opening hours on the day, adjust stops to what's actually open, and bribe café staff with pastries. The cat, the goblet, and the belly-aching fun are all real enough for a great afternoon. 🐱🍦
 </div>
 
 </div>

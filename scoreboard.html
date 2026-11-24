@@ -79,7 +79,7 @@
   <header>
     <div>
       <h1>𓂀 Arkan Plaza Treasure Hunt — Live Scoreboard</h1>
-      <div class="sub">The Quest for the Golden Gelato Goblet · 5 teams · real-time</div>
+      <div class="sub">The Quest for the Golden Gelato Goblet · 5 teams · 18 stops · real-time</div>
     </div>
     <div class="status"><span class="dot" id="dot"></span><span id="statusText">connecting…</span></div>
   </header>
@@ -89,7 +89,7 @@
     <div class="card">
       <h2>🏆 Leaderboard</h2>
       <div class="lb" id="leaderboard"><div class="loading">Loading teams…</div></div>
-      <p class="hint">Letters fill in as teams clear stops (1→12). The secret word is what they spell: <b>GOLDENGELATO</b>.</p>
+      <p class="hint">Letters fill in as teams clear stops (1→18). The three words they spell: <b>GOLDEN GELATO GOBLET</b>.</p>
     </div>
 
     <!-- SIDEBAR: submit + feed -->
@@ -104,6 +104,8 @@
           <option>1</option><option>2</option><option>3</option><option>4</option>
           <option>5</option><option>6</option><option>7</option><option>8</option>
           <option>9</option><option>10</option><option>11</option><option>12</option>
+          <option>13</option><option>14</option><option>15</option><option>16</option>
+          <option>17</option><option>18</option>
         </select>
         <label for="points">Points</label>
         <input id="points" type="number" value="5" />
@@ -135,8 +137,8 @@
 const SUPABASE_URL = 'https://wmpksflzlyamjuiqmgle.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcGtzZmx6bHlhbWp1aXFtZ2xlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NzQyODksImV4cCI6MjExMTA1MDI4OX0.lxkCKG9tdg_zCgGy29LGPAlkTQZCioy2fF3WQG-nosg';
 
-const LETTERS = {1:'G',2:'O',3:'L',4:'D',5:'E',6:'N',7:'G',8:'E',9:'L',10:'A',11:'T',12:'O'};
-const TOTAL_STOPS = 12;
+const LETTERS = {1:'G',2:'O',3:'L',4:'D',5:'E',6:'N',7:'G',8:'E',9:'L',10:'A',11:'T',12:'O',13:'G',14:'O',15:'B',16:'L',17:'E',18:'T'};
+const TOTAL_STOPS = 18;
 
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
