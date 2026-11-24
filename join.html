@@ -67,6 +67,7 @@
 </header>
 
 <div id="banner" class="banner open">Loading roster…</div>
+<div id="huntBanner" class="banner open" style="display:none;cursor:pointer" onclick="enterGame()">🐱 The hunt is <b>LIVE</b> — tap to enter the game →</div>
 
 <div class="card">
   <h2>⚔️ The five guilds <span style="font-weight:400;font-size:12px;color:#7a6a4f">(tap to see members · live)</span></h2>
@@ -98,6 +99,7 @@
     </div>
     <div id="hostpanel" class="hostpanel">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+        <button class="btn small" id="startBtn" onclick="startHunt()" style="background:var(--teal);color:#fff;padding:7px 12px;font-size:13px;border-radius:8px;margin-top:0;cursor:pointer;border:none;font-weight:800">▶️ Start the hunt</button>
         <button class="btn small lock" id="lockBtn" onclick="toggleLock()">🔒 Lock roster</button>
         <span class="hint" style="margin-top:0">Review everyone, move players between guilds, then lock before the briefing ends.</span>
       </div>
@@ -118,7 +120,7 @@ const U='https://wmpksflzlyamjuiqmgle.supabase.co';
 const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcGtzZmx6bHlhbWp1aXFtZ2xlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NzQyODksImV4cCI6MjExMTA1MDI4OX0.lxkCKG9tdg_zCgGy29LGPAlkTQZCioy2fF3WQG-nosg';
 const MAX=10;
 const c=supabase.createClient(U,K);
-let TEAMS=[],PLAYERS=[],LOCKED=false,PINHASH='',hostMode=false;
+let TEAMS=[],PLAYERS=[],LOCKED=false,PINHASH='',hostMode=false,HUNT='';
 
 function byId(id){return document.getElementById(id);}
 function teamName(id){const t=TEAMS.find(t=>t.id===id);return t?t.name:id;}
@@ -139,7 +141,9 @@ async function loadAll(){
   const sm={};(s.data||[]).forEach(r=>sm[r.key]=r.value);
   LOCKED=sm.roster_locked==='true';
   PINHASH=sm.host_pin_sha256||'';
+  HUNT=sm.hunt_started_at||'';
   render();
+  maybeEnterHunt(true);
 }
 
 function render(){
@@ -188,6 +192,27 @@ function showMsg(text,kind){
   if(kind!=='err')setTimeout(()=>{m.className='msg';},6000);
 }
 
+/* When the host starts the hunt, every phone sitting on this page
+   is automatically carried into the game with its chosen guild. */
+function maybeEnterHunt(auto){
+  const b=byId('huntBanner');
+  if(!HUNT){b.style.display='none';return;}
+  const team=localStorage.getItem('ght_team');
+  if(!team){
+    b.style.display='none';
+    showMsg('🐾 The hunt has STARTED! Type your name and pick your guild below — you\'ll jump straight into the game.','ok');
+    return;
+  }
+  if(auto&&sessionStorage.getItem('ght_jumped')!=='1'){
+    sessionStorage.setItem('ght_jumped','1');
+    showMsg('🐱 The hunt has started! Entering the game…','ok');
+    setTimeout(()=>{location.href='game.html';},1800);
+    return;
+  }
+  b.style.display='block';
+}
+function enterGame(){location.href='game.html';}
+
 async function joinTeam(){
   if(LOCKED){showMsg('The roster is locked — talk to the host at the briefing.','err');return;}
   const name=byId('name').value.trim().replace(/\s+/g,' ');
@@ -212,6 +237,7 @@ async function joinTeam(){
       showMsg(`Welcome to the ${teamName(team)}, ${name}! 🐱 See you at the briefing — bandana + team sheet waiting.`,'ok');
     }
     byId('name').value='';
+    localStorage.setItem('ght_team',team); // remember this phone's guild for the game
   }catch(e){
     showMsg('Something went wrong saving your name: '+(e.message||e),'err');
   }
@@ -255,6 +281,7 @@ async function hostLogin(){
 function renderHost(){
   const list=byId('hostlist');
   byId('lockBtn').textContent=LOCKED?'🔓 Unlock roster':'🔒 Lock roster';
+  byId('startBtn').textContent=HUNT?'⏱ Restart release clock':'▶️ Start the hunt';
   if(!PLAYERS.length){list.innerHTML='<div class="hint">Nobody has joined yet.</div>';return;}
   list.innerHTML=PLAYERS.map(p=>`
     <div class="prow">
@@ -279,6 +306,15 @@ async function removePlayer(id){
   const {error}=await c.from('players').delete().eq('id',id);
   if(error)alert('Remove failed: '+error.message);
   loadAll();
+}
+
+async function startHunt(){
+  if(HUNT&&!confirm('Restart the release clock? All five guild release times reset to now.'))return;
+  sessionStorage.setItem('ght_jumped','1'); // the host stays on this page to watch the roster
+  const {error}=await c.from('settings').upsert({key:'hunt_started_at',value:new Date().toISOString()},{onConflict:'key'});
+  if(error){alert('Could not start: '+error.message);return;}
+  showMsg('▶️ Hunt started! Releases: Blue +0 · Red +5 · Green +10 · Gold +15 · Purple +20 — every phone on this page jumps into the game automatically.','ok');
+  await loadAll();
 }
 
 async function toggleLock(){
