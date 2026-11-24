@@ -206,12 +206,12 @@ function maybeEnterHunt(auto){
   if(auto&&sessionStorage.getItem('ght_jumped')!=='1'){
     sessionStorage.setItem('ght_jumped','1');
     showMsg('🐱 The hunt has started! Entering the game…','ok');
-    setTimeout(()=>{location.href='game.html?mode=play';},1800);
+    setTimeout(()=>{location.href='/play';},1800);
     return;
   }
   b.style.display='block';
 }
-function enterGame(){location.href='game.html?mode=play';}
+function enterGame(){location.href='/play';}
 
 async function joinTeam(){
   if(LOCKED){showMsg('The roster is locked — talk to the host at the briefing.','err');return;}

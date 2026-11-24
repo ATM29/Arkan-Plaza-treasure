@@ -142,9 +142,12 @@
 const U='https://wmpksflzlyamjuiqmgle.supabase.co';
 const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcGtzZmx6bHlhbWp1aXFtZ2xlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NzQyODksImV4cCI6MjExMTA1MDI4OX0.lxkCKG9tdg_zCgGy29LGPAlkTQZCioy2fF3WQG-nosg';
 const c=supabase.createClient(U,K);
-/* Entry mode: ?mode=play → player view (no Host tab), ?mode=host → host
-   dashboard, plain game.html → everything (legacy). */
-const MODE=(new URLSearchParams(location.search).get('mode')||'').toLowerCase();
+/* Entry mode: /play → player view (no Host tab), /host → host dashboard;
+   game.html?mode=play|host also works; plain game.html → everything. */
+const MODE=(()=>{const p=location.pathname.toLowerCase();
+  if(p.indexOf('host')>=0)return 'host';
+  if(p.indexOf('play')>=0)return 'play';
+  return (new URLSearchParams(location.search).get('mode')||'').toLowerCase();})();
 const RELEASE={sapphire_scarabs:0,crimson_cobras:5,emerald_ibises:10,golden_jackals:15,violet_vultures:20};
 const LETTERS='GOLDENGELATOGOBLET'.split('');
 
