@@ -1,0 +1,8 @@
+# Deploy the site as static files only.
+# With Framework Preset "python", Vercel mounted api/index.py as a ROOT
+# catch-all function, so every page (/, /scoreboard.html, …) returned
+# 404 {"error":"Not found."} from the legacy photo API instead of the
+# static HTML. Nothing on the current site calls that legacy endpoint
+# (it also has no env vars configured), so keep it in git but out of
+# deployments until the photo flow is revived deliberately.
+api/
