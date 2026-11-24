@@ -130,7 +130,11 @@ async function loadAll(){
     c.from('players').select('*').order('created_at'),
     c.from('settings').select('*')
   ]);
-  if(t.error||p.error||s.error){showMsg('Could not load the roster. Refresh in a moment.','err');return;}
+  const errs=[];
+  if(t.error)errs.push('teams: '+t.error.message);
+  if(p.error)errs.push('players: '+p.error.message);
+  if(s.error)errs.push('settings: '+s.error.message);
+  if(errs.length){showMsg('Could not load the roster — '+errs.join(' · '),'err');return;}
   TEAMS=t.data||[];PLAYERS=p.data||[];
   const sm={};(s.data||[]).forEach(r=>sm[r.key]=r.value);
   LOCKED=sm.roster_locked==='true';
