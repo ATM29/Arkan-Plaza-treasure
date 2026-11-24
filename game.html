@@ -404,8 +404,11 @@ function renderPlay(){
   if(n>=13&&!gauntletDone()){renderGauntlet();return;}
   const st=STOPS[n-1];
   const pr=S.progress.find(p=>p.stop_number===n);
-  if(pr&&pr.riddle_solved&&!pr.dare_done){renderDareAsync(st);return;}
-  if(pr&&pr.riddle_solved&&pr.dare_done){renderDoneCard(st,n);return;}
+  if(pr&&pr.riddle_solved&&!pr.dare_done){
+    if(pr.host_status==='pending'){renderWaiting(st,pr);return;}
+    renderDareAsync(st);return;
+  }
+  if(pr&&pr.riddle_solved&&pr.dare_done){S.photo=null;S.mediaType=null;clearMedia(n);renderDoneCard(st,n);return;}
   renderRiddle(st);
 }
 function progressNote(){
@@ -483,8 +486,10 @@ function renderReveal(){
 function closeReveal(){const d=$('revealOv');if(d)d.remove();S.reveal=null;S.playView='dare';
   const n=curStop();renderDareAsync(STOPS[n-1]);}
 function renderDare(st){
+  const pr=S.progress.find(p=>p.stop_number===st.n);
   $('screen').innerHTML=`
   <div class="card">
+    ${pr&&pr.host_status==='denied'?`<div class="msg show err" style="margin-bottom:8px">❌ Host: ${esc(pr.host_comment||'That proof didn\'t pass — try again.')}</div>`:''}
     <span class="act-badge ${st.tier===2?'a2':''}">${st.tier===2?'ACT II · CAT TAX':'ACT I · DARE'}</span>
     <div style="display:flex;align-items:center;gap:10px"><span class="stopnum">${st.n}</span>
     <b style="font-size:14px;color:#5a4a32">${esc(st.loc)}</b></div>
@@ -497,7 +502,7 @@ function renderDare(st){
       <button class="btn main" style="flex:1" onclick="$('camera').click()">📷 ${S.photo&&S.mediaType==='image'?'Retake photo':'Photo'}</button>
       <button class="btn ghost" style="flex:1" onclick="$('videoCam').click()">🎥 ${S.photo&&S.mediaType==='video'?'Retake video':'Video'}</button>
     </div>
-    ${S.photo?`<button class="btn gold" onclick="acceptDare(${st.n})">✓ ${S.mediaType==='video'?'Video':'Photo'} looks glorious — claim the points</button>`:''}
+    ${S.photo?`<button class="btn gold" id="claimBtn" onclick="acceptDare(${st.n})">📤 Send ${S.mediaType==='video'?'video':'photo'} for host review</button>`:''}
     <div class="msg" id="playMsg"></div>
     <p class="tiny" style="margin-top:10px">🎥 Short videos welcome (10–30s is plenty) — a video counts as your photo proof. The roaming host may demand to see it later; keep it on your roll. 🐱</p>
   </div>`;
@@ -517,6 +522,20 @@ async function renderDareAsync(st){
     if(m&&!S.photo){S.photo=URL.createObjectURL(m.blob);S.mediaType=m.type;}}
   renderDare(st);
 }
+function renderWaiting(st,pr){
+  $('screen').innerHTML=`
+  <div class="card center">
+    <div class="stamp">📤</div>
+    <h1>Proof sent!</h1>
+    <p><b>${esc(st.loc)}</b></p>
+    ${pr.media_url?(pr.media_type==='video'
+      ?`<video src="${esc(pr.media_url)}" controls playsinline preload="metadata" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin:8px 0"></video>`
+      :`<img src="${esc(pr.media_url)}" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin:8px 0" />`):''}
+    <p class="tiny">⏳ Waiting for the host to verify your ${pr.media_type==='video'?'video':'photo'} — you move on the moment it's approved.</p>
+    <p class="tiny">Sent ${pr.submitted_at?new Date(pr.submitted_at).toLocaleTimeString():''} · this screen updates by itself</p>
+    <div class="loading" style="margin-top:8px">Watching for the host's verdict…</div>
+  </div>`;
+}
 function onPhoto(ev){
   const f=ev.target.files&&ev.target.files[0];if(!f)return;
   S.photo=URL.createObjectURL(f);S.mediaType='image';ev.target.value='';
@@ -531,25 +550,38 @@ function onVideo(ev){
 }
 async function acceptDare(n){
   const st=STOPS[n-1];
-  const {data,error}=await c.from('stops_progress').update({dare_done:true,completed_at:new Date().toISOString()})
-    .eq('team_id',S.team).eq('stop_number',n).eq('dare_done',false).eq('riddle_solved',true).select();
-  if(error){pmsg('Save failed: '+error.message,'err');return;}
-  if(data&&data.length){
-    const pts=tierPts(st.tier);
-    await c.from('score_events').insert({team_id:S.team,stop_number:n,points:pts,description:`Stop ${n} dare complete`});
-    S.photo=null;S.mediaType=null;clearMedia(n);S.playView='riddle';S.hintMsg='';S.justDone=n;
-    await loadAll();
-    showMsg(`Letter ${st.letter} earned! +${pts} — next stop unlocked. 🐱`,'ok');
-    go('play');
-  }else{await loadAll();go('play');showMsg('Couldn\u0027t claim that — state refreshed, tap the claim button again.','err');}
+  if(!S.photo){pmsg('Capture a photo or video first.','err');return;}
+  const btn=$('claimBtn');if(btn)btn.disabled=true;
+  pmsg('Uploading your proof…','ok');
+  try{
+    const blob=await (await fetch(S.photo)).blob();
+    const isVid=S.mediaType==='video';
+    const ext=isVid?((blob.type||'').includes('mp4')?'mp4':'webm'):'jpg';
+    const path=`${S.team}/${n}-${Date.now()}.${ext}`;
+    const up=await c.storage.from('dare-media').upload(path,blob,{contentType:blob.type||undefined,upsert:false});
+    if(up.error)throw new Error('Upload failed: '+up.error.message);
+    const pub=c.storage.from('dare-media').getPublicUrl(path).data.publicUrl;
+    const {data,error}=await c.from('stops_progress')
+      .update({host_status:'pending',media_url:pub,media_type:S.mediaType,submitted_at:new Date().toISOString()})
+      .eq('team_id',S.team).eq('stop_number',n).eq('dare_done',false).eq('riddle_solved',true).select();
+    if(error)throw new Error('Save failed: '+error.message);
+    if(!data||!data.length)throw new Error('State changed — refresh and try again.');
+    await loadAll();go('play');
+    showMsg('📤 Proof sent! The host will verify it — hold tight. 🐱','ok');
+  }catch(e){
+    pmsg(String(e.message||e),'err');
+    if(btn)btn.disabled=false;
+  }
 }
 function renderDoneCard(st,n){
+  const pr=S.progress.find(p=>p.stop_number===n);
   $('screen').innerHTML=`
   <div class="card center">
     <div class="stamp">✅</div>
     <h1>Stop ${n} complete</h1>
     <p><b>${esc(st.loc)}</b></p>
     <p class="tiny">Letter <b>${st.letter}</b> in the pouch · points banked</p>
+    ${pr&&pr.host_comment?`<p class="tiny" style="color:#2e7d5b;font-weight:700">💬 Host: “${esc(pr.host_comment)}”</p>`:''}
     ${progressNote()}
     ${n<18?`<button class="btn main" onclick="S.justDone=null;S.playView='riddle';render()">Next stop → ${n+1} 🐾</button>`:
       `<button class="btn gold" onclick="S.justDone=null;render()">All stops done — go to the finale 🏁</button>`}
@@ -830,10 +862,70 @@ function renderHost(){
     </div>
     <button class="btn gold" onclick="quickAward()">Award points</button>
     <hr style="border:none;border-top:1px dashed var(--gold);margin:14px 0" />
+    <h2>📸 Dare proof review</h2>
+    <div id="reviewList"><div class="loading">Loading…</div></div>
+    <hr style="border:none;border-top:1px dashed var(--gold);margin:14px 0" />
     <button class="btn danger" onclick="resetAll()">🧹 Reset the whole game</button>
     <p class="tiny">Clears scores, letters, gauntlet & finishes — and stops the clock. Keeps the roster of players.</p>
     <button class="btn ghost small" onclick="S.hostMode=false;render()">Lock panel</button>
   </div>`;
+  renderReview();
+}
+function renderReview(){
+  const el=$('reviewList');if(!el)return;
+  const pend=S.progress.filter(p=>p.host_status==='pending')
+    .sort((a,b)=>(a.submitted_at||'')<(b.submitted_at||'')?-1:1);
+  const hist=S.progress.filter(p=>p.host_status==='approved'||p.host_status==='denied')
+    .sort((a,b)=>(b.submitted_at||'')<(a.submitted_at||'')?-1:1).slice(0,8);
+  const tname=id=>{const t=S.teams.find(t=>t.id===id);return t?t.name:id;};
+  let html='';
+  if(!pend.length)html+='<p class="tiny">✅ No proofs waiting — enjoy the calm.</p>';
+  pend.forEach(p=>{
+    const key=p.team_id+'_'+p.stop_number;
+    const st=STOPS[p.stop_number-1];
+    html+=`<div class="card" style="border:2px solid var(--gold);margin-top:10px">
+      <b>${esc(tname(p.team_id))}</b> · Stop ${p.stop_number} · ${esc(st?st.loc:'')}<br/>
+      <span class="tiny">🕒 ${p.submitted_at?new Date(p.submitted_at).toLocaleTimeString():''} · ${p.media_type==='video'?'🎥 video':'📷 photo'}</span>
+      ${p.media_url?(p.media_type==='video'
+        ?`<video src="${esc(p.media_url)}" controls playsinline preload="metadata" style="width:100%;border-radius:10px;margin-top:6px"></video>`
+        :`<img src="${esc(p.media_url)}" style="width:100%;border-radius:10px;margin-top:6px" />`):''}
+      <input type="text" id="rc_${key}" placeholder="Comment for the team (required to deny)" value="${S.drafts&&S.drafts[key]?esc(S.drafts[key]):''}" oninput="S.drafts=S.drafts||{};S.drafts['${key}']=this.value" style="width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid #d8cba9" />
+      <div class="row" style="margin-top:8px">
+        <button class="btn main" style="flex:1" onclick="reviewDecision('${p.team_id}',${p.stop_number},true)">✅ Approve</button>
+        <button class="btn danger" style="flex:1" onclick="reviewDecision('${p.team_id}',${p.stop_number},false)">❌ Deny</button>
+      </div>
+    </div>`;
+  });
+  if(hist.length){
+    html+='<h2 style="font-size:15px;margin-top:14px">📜 Recently reviewed</h2>';
+    hist.forEach(p=>{
+      html+=`<p class="tiny">${p.host_status==='approved'?'✅':'❌'} <b>${esc(tname(p.team_id))}</b> · Stop ${p.stop_number}${p.host_comment?` — “${esc(p.host_comment)}”`:''}</p>`;
+    });
+  }
+  el.innerHTML=html;
+}
+async function reviewDecision(team,stop,ok){
+  const key=team+'_'+stop;
+  const ta=$('rc_'+key);
+  const comment=ta?ta.value.trim():'';
+  if(!ok&&!comment){alert('Add a comment so the team knows what to fix.');return;}
+  const {data,error}=await c.from('stops_progress')
+    .update(ok?{dare_done:true,host_status:'approved',host_comment:comment||null,completed_at:new Date().toISOString()}
+               :{host_status:'denied',host_comment:comment})
+    .eq('team_id',team).eq('stop_number',stop).eq('host_status','pending').select();
+  if(error){alert('Failed: '+error.message);return;}
+  if(!data||!data.length){alert('Already reviewed.');await loadAll();return;}
+  if(ok){
+    const st=STOPS[stop-1];
+    const pts=tierPts(st.tier);
+    const {error:e2}=await c.from('score_events').insert({team_id:team,stop_number:stop,points:pts,description:`Stop ${stop} dare approved`});
+    if(e2)alert('Approved, but points insert failed: '+e2.message);
+    showMsg('✅ Approved — points awarded, team unlocked to the next stop.','ok');
+  }else{
+    showMsg('❌ Denied — the team sees your comment and can resubmit.','ok');
+  }
+  if(S.drafts)delete S.drafts[key];
+  await loadAll();
 }
 async function sha256hex(text){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));

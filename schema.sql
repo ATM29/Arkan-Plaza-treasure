@@ -147,8 +147,24 @@ create table if not exists public.stops_progress (
   lng double precision,
   solved_at timestamptz,
   completed_at timestamptz,
+  media_url text,
+  media_type text,
+  host_status text,
+  host_comment text,
+  submitted_at timestamptz,
   primary key (team_id, stop_number)
 );
+
+-- Dare proof review: players upload photo/video to this public bucket,
+-- the host approves/denies from game.html's Host tab (see host_status).
+insert into storage.buckets (id, name, public) values ('dare-media','dare-media', true)
+  on conflict (id) do nothing;
+drop policy if exists "dare media public read" on storage.objects;
+create policy "dare media public read" on storage.objects for select using (bucket_id='dare-media');
+drop policy if exists "dare media anon insert" on storage.objects;
+create policy "dare media anon insert" on storage.objects for insert to anon with check (bucket_id='dare-media');
+drop policy if exists "dare media anon delete" on storage.objects;
+create policy "dare media anon delete" on storage.objects for delete to anon using (bucket_id='dare-media');
 
 create table if not exists public.game_meta (
   team_id text primary key references public.teams(id) on delete cascade,
