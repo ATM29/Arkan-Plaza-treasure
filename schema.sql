@@ -165,6 +165,8 @@ drop policy if exists "dare media anon insert" on storage.objects;
 create policy "dare media anon insert" on storage.objects for insert to anon with check (bucket_id='dare-media');
 drop policy if exists "dare media anon delete" on storage.objects;
 create policy "dare media anon delete" on storage.objects for delete to anon using (bucket_id='dare-media');
+drop policy if exists "dare media anon update" on storage.objects;
+create policy "dare media anon update" on storage.objects for update to anon using (bucket_id='dare-media');
 
 create table if not exists public.game_meta (
   team_id text primary key references public.teams(id) on delete cascade,

@@ -522,6 +522,16 @@ async function renderDareAsync(st){
     if(m&&!S.photo){S.photo=URL.createObjectURL(m.blob);S.mediaType=m.type;}}
   renderDare(st);
 }
+function mediaFallback(el){
+  if(el.dataset.fb)return;el.dataset.fb='1';
+  const isV=el.tagName==='VIDEO';
+  const d=document.createElement('div');
+  d.style='border:2px dashed var(--gold);border-radius:12px;padding:16px;margin-top:8px;text-align:center;background:#fffaf0';
+  d.innerHTML=`<div style="font-size:28px">${isV?'🎬':'🖼️'}</div>
+    <p class="tiny" style="margin:6px 0">This browser can't preview it inline — open it full screen.</p>
+    <a class="btn main" style="display:inline-block;text-decoration:none;margin-top:4px" href="${el.getAttribute('src')}" target="_blank" rel="noopener">▶️ Open it</a>`;
+  el.replaceWith(d);
+}
 function renderWaiting(st,pr){
   $('screen').innerHTML=`
   <div class="card center">
@@ -529,8 +539,8 @@ function renderWaiting(st,pr){
     <h1>Proof sent!</h1>
     <p><b>${esc(st.loc)}</b></p>
     ${pr.media_url?(pr.media_type==='video'
-      ?`<video src="${esc(pr.media_url)}" controls playsinline preload="metadata" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin:8px 0"></video>`
-      :`<img src="${esc(pr.media_url)}" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin:8px 0" />`):''}
+      ?`<video src="${esc(pr.media_url)}" controls playsinline preload="metadata" onerror="mediaFallback(this)" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin:8px 0"></video>`
+      :`<img src="${esc(pr.media_url)}" onerror="mediaFallback(this)" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin:8px 0" />`):''}
     <p class="tiny">⏳ Waiting for the host to verify your ${pr.media_type==='video'?'video':'photo'} — you move on the moment it's approved.</p>
     <p class="tiny">Sent ${pr.submitted_at?new Date(pr.submitted_at).toLocaleTimeString():''} · this screen updates by itself</p>
     <div class="loading" style="margin-top:8px">Watching for the host's verdict…</div>
@@ -556,9 +566,24 @@ async function acceptDare(n){
   try{
     const blob=await (await fetch(S.photo)).blob();
     const isVid=S.mediaType==='video';
-    const ext=isVid?((blob.type||'').includes('mp4')?'mp4':'webm'):'jpg';
+    // sniff the real container from the file's magic bytes so the
+    // extension, Content-Type and actual format always agree
+    const head=new Uint8Array(await blob.slice(0,16).arrayBuffer());
+    const ftyp=head[4]===0x66&&head[5]===0x74&&head[6]===0x79&&head[7]===0x70;
+    const ebml=head[0]===0x1A&&head[1]===0x45&&head[2]===0xDF&&head[3]===0xA3;
+    let mime,ext;
+    if(isVid){
+      if(ebml){mime='video/webm';ext='webm';}
+      else if(ftyp&&String.fromCharCode(head[8],head[9],head[10],head[11])==='qt  '){mime='video/quicktime';ext='mov';}
+      else if(ftyp){mime='video/mp4';ext='mp4';}
+      else if((blob.type||'').indexOf('video/')===0){mime=blob.type;ext=mime.indexOf('quicktime')>=0?'mov':mime.indexOf('webm')>=0?'webm':'mp4';}
+      else{mime='video/mp4';ext='mp4';}
+    }else{
+      mime=(blob.type||'').indexOf('image/')===0?blob.type:'image/jpeg';
+      ext=mime.indexOf('png')>=0?'png':mime.indexOf('webp')>=0?'webp':(mime.indexOf('heic')>=0||mime.indexOf('heif')>=0)?'heic':'jpg';
+    }
     const path=`${S.team}/${n}-${Date.now()}.${ext}`;
-    const up=await c.storage.from('dare-media').upload(path,blob,{contentType:blob.type||undefined,upsert:false});
+    const up=await c.storage.from('dare-media').upload(path,blob,{contentType:mime,upsert:false});
     if(up.error)throw new Error('Upload failed: '+up.error.message);
     const pub=c.storage.from('dare-media').getPublicUrl(path).data.publicUrl;
     const {data,error}=await c.from('stops_progress')
@@ -887,8 +912,8 @@ function renderReview(){
       <b>${esc(tname(p.team_id))}</b> · Stop ${p.stop_number} · ${esc(st?st.loc:'')}<br/>
       <span class="tiny">🕒 ${p.submitted_at?new Date(p.submitted_at).toLocaleTimeString():''} · ${p.media_type==='video'?'🎥 video':'📷 photo'}</span>
       ${p.media_url?(p.media_type==='video'
-        ?`<video src="${esc(p.media_url)}" controls playsinline preload="metadata" style="width:100%;border-radius:10px;margin-top:6px"></video>`
-        :`<img src="${esc(p.media_url)}" style="width:100%;border-radius:10px;margin-top:6px" />`):''}
+        ?`<video src="${esc(p.media_url)}" controls playsinline preload="metadata" onerror="mediaFallback(this)" style="width:100%;border-radius:10px;margin-top:6px"></video>`
+        :`<img src="${esc(p.media_url)}" onerror="mediaFallback(this)" style="width:100%;border-radius:10px;margin-top:6px" />`):''}
       <input type="text" id="rc_${key}" placeholder="Comment for the team (required to deny)" value="${S.drafts&&S.drafts[key]?esc(S.drafts[key]):''}" oninput="S.drafts=S.drafts||{};S.drafts['${key}']=this.value" style="width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid #d8cba9" />
       <div class="row" style="margin-top:8px">
         <button class="btn main" style="flex:1" onclick="reviewDecision('${p.team_id}',${p.stop_number},true)">✅ Approve</button>
