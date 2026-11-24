@@ -4,6 +4,8 @@ This package is the **Vercel version**. It is different from the earlier Python-
 
 > **The live scoreboard:** `schema.sql` now also creates the `teams` and `score_events` tables used by `scoreboard.html` and `tiny-app.js`, and seeds the five guilds of the Golden Gelato Goblet hunt. The team self-join page (`join.html`) uses the `players` and `settings` tables — both are included in `schema.sql`, so running it once sets up everything. The phone game (`game.html`) additionally uses `stops_progress`, `game_meta` and `finishes` (run them from this repo's Supabase, or add them the same way). Make sure `scoreboard.html`, `join.html`, `game.html` and `arkan-treasure-hunt.html` are uploaded to the repository root too, so the landing page buttons work. Running `schema.sql` once sets up both systems.
 
+> **Entry links (game day):** players → `https://arkanplaza.vercel.app/play.html` (play only — the Host tab is hidden); host → `https://arkanplaza.vercel.app/host.html` (lands on the PIN-protected Host dashboard with proof review). Both are thin redirects over `game.html?mode=play` / `game.html?mode=host`; plain `game.html` still shows all tabs.
+
 You need a computer, internet access, and accounts on GitHub, Supabase and Vercel. Their free plans have limits; this is intended for a small, non-commercial event. Check each provider's current terms and quotas before the event.
 
 ## 1. Create a Supabase project
