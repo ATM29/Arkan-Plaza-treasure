@@ -64,26 +64,29 @@ grant execute on function public.hunt_review(bigint,text,text) to service_role;
 
 -- ============================================================================
 -- LIVE SCOREBOARD (scoreboard.html / tiny-app.js)
--- Tables for the 5-team Golden Gelato Goblet hunt: a leaderboard of teams and
--- a stream of score events. The scoreboard reads these with the PUBLIC anon
--- key from the browser, so RLS allows anon to read teams and to read/insert/
--- delete score events. That is intentional for a trusted, small event: anyone
--- with the link can award points. Never put your secret key in HTML.
+-- Tables for the 5-team Golden Gelato Goblet hunt: a guild roster and a
+-- stream of score events. The scoreboard reads these from the browser with
+-- the PUBLIC anon key, so RLS allows anon to read teams and to read/insert/
+-- update/delete score events. That is intentional for a trusted, small
+-- event: anyone with the link can award points. Never put your secret key
+-- in HTML. This section is idempotent and mirrors the structure already
+-- live in the demo project, so re-running the whole file is safe.
 -- ============================================================================
 
 create table if not exists public.teams (
-  id uuid primary key default gen_random_uuid(),
-  name text not null unique,
+  id text primary key,
+  name text not null,
   color text not null default '#0f8a8a',
   mascot text not null default '',
   god text not null default '',
-  chant text not null default ''
+  chant text not null default '',
+  created_at timestamptz not null default now()
 );
 
 create table if not exists public.score_events (
   id uuid primary key default gen_random_uuid(),
-  team_id uuid not null references public.teams(id) on delete cascade,
-  stop_number smallint check (stop_number between 1 and 18),
+  team_id text not null references public.teams(id) on delete cascade,
+  stop_number integer check (stop_number between 1 and 18),
   points integer not null default 0,
   description text,
   created_at timestamptz not null default now()
@@ -93,22 +96,26 @@ create index if not exists score_events_created_idx on public.score_events (crea
 alter table public.teams enable row level security;
 alter table public.score_events enable row level security;
 drop policy if exists "public read teams" on public.teams;
+drop policy if exists "public insert teams" on public.teams;
 drop policy if exists "public read score_events" on public.score_events;
 drop policy if exists "public insert score_events" on public.score_events;
+drop policy if exists "public update score_events" on public.score_events;
 drop policy if exists "public delete score_events" on public.score_events;
 create policy "public read teams"        on public.teams        for select using (true);
+create policy "public insert teams"      on public.teams        for insert with check (true);
 create policy "public read score_events" on public.score_events for select using (true);
 create policy "public insert score_events" on public.score_events for insert with check (true);
+create policy "public update score_events" on public.score_events for update using (true);
 create policy "public delete score_events" on public.score_events for delete using (true);
 
-grant select on public.teams to anon, authenticated;
-grant select, insert, delete on public.score_events to anon, authenticated;
+grant select, insert on public.teams to anon, authenticated;
+grant select, insert, update, delete on public.score_events to anon, authenticated;
 
--- Seed the five guilds (safe to re-run: unique name conflicts are ignored).
-insert into public.teams (name, color, mascot, god, chant) values
-  ('The Sapphire Scarabs', '#2b6cb0', 'Scarab beetle', 'Khepri',   'Roll it, roll it, scarab style — we shine bluer than the Nile!'),
-  ('The Crimson Cobras',   '#c0392b', 'Cobra',         'Wadjet',   'Hiss, snap, strike — red cobras never strike out!'),
-  ('The Emerald Ibises',   '#2e8b57', 'Ibis',          'Thoth',    'Quill and beak, we''re super wise — Emerald Ibises win the prize!'),
-  ('The Golden Jackals',   '#e0a800', 'Jackal',        'Anubis',   'Anubis guide, jackals gold — we sniff out treats like legends told!'),
-  ('The Violet Vultures',  '#7d3c98', 'Vulture',       'Nekhbet',  'Circle high, swoop down low — Violet Vultures steal the show!')
-on conflict (name) do nothing;
+-- Seed the five guilds (safe to re-run: existing rows are skipped by id).
+insert into public.teams (id, name, color, mascot, god, chant) values
+  ('sapphire_scarabs', 'Sapphire Scarabs', '#2b6cb0', 'Scarab beetle', 'Khepri',  'Roll it, roll it, scarab style — we shine bluer than the Nile!'),
+  ('crimson_cobras',   'Crimson Cobras',   '#c0392b', 'Cobra',         'Wadjet',  'Hiss, snap, strike — red cobras never strike out!'),
+  ('emerald_ibises',   'Emerald Ibises',   '#2e8b57', 'Ibis',          'Thoth',   'Quill and beak, we''re super wise — Emerald Ibises win the prize!'),
+  ('golden_jackals',   'Golden Jackals',   '#e0a800', 'Jackal',        'Anubis',  'Anubis guide, jackals gold — we sniff out treats like legends told!'),
+  ('violet_vultures',  'Violet Vultures',  '#7d3c98', 'Vulture',       'Nekhbet', 'Circle high, swoop down low — Violet Vultures steal the show!')
+on conflict (id) do nothing;
