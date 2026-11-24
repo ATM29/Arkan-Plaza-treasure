@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Join a Guild — Arkan Plaza Treasure Hunt</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --gold:#d4a017; --gold-light:#f3d27a; --teal:#0f8a8a; --teal-dark:#0a5f5f;
+    --sand:#f6efe1; --ink:#2b2118; --paper:#fffdf7; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",Tahoma,Verdana,sans-serif;color:var(--ink);margin:0;background:var(--sand);line-height:1.5;}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 14px 70px;}
+  header{background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;border-radius:16px;padding:20px 18px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.15);}
+  header h1{margin:.15em 0;font-size:24px;}
+  header .sub{font-size:13px;opacity:.92;}
+  .banner{border-radius:12px;padding:12px 16px;margin:14px 0;font-weight:700;text-align:center;}
+  .banner.open{background:#e9f7ef;border:2px solid #2e8b57;color:#1c6b41;}
+  .banner.locked{background:#fdeef2;border:2px solid var(--red);color:#a5281b;}
+  .card{background:var(--paper);border:1px solid #e7ddc7;border-radius:14px;padding:16px 16px;margin:14px 0;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+  .card h2{margin:0 0 10px;font-size:18px;color:var(--teal-dark);border-bottom:3px solid var(--gold);padding-bottom:6px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;}
+  .team{border-left:8px solid;border-radius:12px;padding:10px 12px;background:#fff;border-top:1px solid #eee3cd;border-right:1px solid #eee3cd;border-bottom:1px solid #eee3cd;position:relative;}
+  .team .tname{font-weight:800;font-size:15px;}
+  .team .tgod{font-size:12px;color:#7a6a4f;}
+  .team .count{position:absolute;top:8px;right:10px;background:var(--teal);color:#fff;border-radius:999px;font-size:12px;font-weight:800;padding:2px 9px;}
+  .team .count.full{background:var(--red);}
+  .team ul{margin:8px 0 2px;padding-left:18px;font-size:13px;}
+  .team li{padding:1px 0;}
+  .team .empty{font-size:12px;color:#9a8b70;font-style:italic;margin:6px 0 2px;}
+  label{display:block;font-size:13px;font-weight:700;margin:10px 0 4px;color:#5a4a32;}
+  input,select,button{font-family:inherit;}
+  input[type=text],input[type=password],select{width:100%;padding:11px 10px;border-radius:9px;border:1px solid #d8cba9;font-size:16px;background:#fff;color:var(--ink);}
+  .btn{width:100%;margin-top:12px;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:800;cursor:pointer;}
+  .btn.join{background:var(--teal);color:#fff;}
+  .btn.join:hover{background:var(--teal-dark);}
+  .btn.leave{background:#fff;color:var(--red);border:2px solid var(--red);margin-top:8px;padding:10px;font-size:14px;}
+  .btn.host{background:#efe6cf;color:#5a4a32;font-size:13px;padding:9px;margin-top:10px;}
+  .btn.small{width:auto;padding:7px 12px;font-size:13px;border-radius:8px;margin-top:0;}
+  .btn.lock{background:var(--gold);color:#3a2c00;}
+  .msg{border-radius:10px;padding:10px 14px;margin-top:12px;font-weight:700;font-size:14px;display:none;}
+  .msg.ok{display:block;background:#e9f7ef;border:1px solid #2e8b57;color:#1c6b41;}
+  .msg.err{display:block;background:#fdeef2;border:1px solid var(--red);color:#a5281b;}
+  .hint{font-size:12px;color:#7a6a4f;margin-top:8px;}
+  details.hostbox{margin-top:6px;}
+  details.hostbox summary{cursor:pointer;font-weight:700;font-size:13px;color:#7a6a4f;}
+  .hostpanel{display:none;margin-top:12px;border-top:1px dashed var(--gold);padding-top:10px;}
+  .hostpanel.on{display:block;}
+  .prow{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #ece3cd;border-radius:9px;padding:7px 9px;margin:7px 0;flex-wrap:wrap;}
+  .prow .pname{font-weight:700;font-size:14px;flex:1;min-width:110px;}
+  .prow select{width:auto;flex:1;min-width:130px;padding:6px 8px;font-size:13px;}
+  .prow .del{background:#fdeef2;color:var(--red);border:1px solid var(--red);border-radius:7px;padding:6px 9px;font-size:12px;font-weight:700;cursor:pointer;}
+  .roster-note{font-size:12px;color:#7a6a4f;text-align:center;margin-top:4px;}
+  .foot{font-size:12px;color:#6b5b42;text-align:center;margin-top:26px;border-top:1px solid #e7ddc7;padding-top:12px;}
+  .loading{text-align:center;color:#7a6a4f;padding:18px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div style="font-size:32px">🤝🐱</div>
+  <h1>Join a Guild</h1>
+  <div class="sub">The Quest for the Golden Gelato Goblet · Arkan Plaza · 5 teams</div>
+</header>
+
+<div id="banner" class="banner open">Loading roster…</div>
+
+<div class="card">
+  <h2>⚔️ The five guilds <span style="font-weight:400;font-size:12px;color:#7a6a4f">(tap to see members · live)</span></h2>
+  <div id="teams" class="grid"><div class="loading">Summoning the guilds…</div></div>
+  <div class="roster-note">Guilds hold <b>10</b> explorers each. Full guilds show in red.</div>
+</div>
+
+<div class="card">
+  <h2>🙌 Put your name in the scroll</h2>
+  <div id="formArea">
+    <label for="name">Your name (as it should appear on the roster)</label>
+    <input type="text" id="name" maxlength="60" placeholder="e.g. Mohamed Adel" autocomplete="name" />
+    <label for="team">Choose your guild</label>
+    <select id="team"><option value="">— pick a guild —</option></select>
+    <button class="btn join" id="joinBtn" onclick="joinTeam()">Join the hunt 🐱</button>
+    <div class="hint">Changed your mind? Just join again with the same name and a different guild — you'll be moved. Already joined and want out? Use “Leave” below.</div>
+    <button class="btn leave" onclick="leaveGuild()">Leave the hunt</button>
+  </div>
+  <div id="msg" class="msg"></div>
+</div>
+
+<div class="card">
+  <details class="hostbox">
+    <summary>🔐 Host controls (review, move players, lock the roster)</summary>
+    <div id="pinArea" style="margin-top:10px;">
+      <label for="pin">Host PIN</label>
+      <input type="password" id="pin" placeholder="PIN" autocomplete="off" />
+      <button class="btn host" onclick="hostLogin()">Unlock host controls</button>
+    </div>
+    <div id="hostpanel" class="hostpanel">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+        <button class="btn small lock" id="lockBtn" onclick="toggleLock()">🔒 Lock roster</button>
+        <span class="hint" style="margin-top:0">Review everyone, move players between guilds, then lock before the briefing ends.</span>
+      </div>
+      <div id="hostlist"></div>
+    </div>
+  </details>
+</div>
+
+<div class="foot">
+  How it works: ① join here from your phone → ② the host reviews the roster at the briefing and locks it → ③ you get your bandana &amp; team sheet → ④ run the hunt.<br/>
+  Built on Supabase · roster updates live for everyone.
+</div>
+
+</div>
+
+<script>
+const U='https://wmpksflzlyamjuiqmgle.supabase.co';
+const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcGtzZmx6bHlhbWp1aXFtZ2xlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NzQyODksImV4cCI6MjExMTA1MDI4OX0.lxkCKG9tdg_zCgGy29LGPAlkTQZCioy2fF3WQG-nosg';
+const MAX=10;
+const c=supabase.createClient(U,K);
+let TEAMS=[],PLAYERS=[],LOCKED=false,PINHASH='',hostMode=false;
+
+function byId(id){return document.getElementById(id);}
+function teamName(id){const t=TEAMS.find(t=>t.id===id);return t?t.name:id;}
+function teamColor(id){const t=TEAMS.find(t=>t.id===id);return t?t.color:'#0f8a8a';}
+
+async function loadAll(){
+  const [t,p,s]=await Promise.all([
+    c.from('teams').select('*').order('name'),
+    c.from('players').select('*').order('created_at'),
+    c.from('settings').select('*')
+  ]);
+  if(t.error||p.error||s.error){showMsg('Could not load the roster. Refresh in a moment.','err');return;}
+  TEAMS=t.data||[];PLAYERS=p.data||[];
+  const sm={};(s.data||[]).forEach(r=>sm[r.key]=r.value);
+  LOCKED=sm.roster_locked==='true';
+  PINHASH=sm.host_pin_sha256||'';
+  render();
+}
+
+function render(){
+  // banner
+  const b=byId('banner');
+  if(LOCKED){b.className='banner locked';b.textContent='🔒 Roster is LOCKED — the host is finalizing teams. See you at the briefing!';}
+  else{b.className='banner open';b.textContent='✅ Roster is OPEN — '+PLAYERS.length+' explorer'+(PLAYERS.length===1?'':'s')+' so far. Pick your guild!';}
+
+  // team cards
+  const g=byId('teams');g.innerHTML='';
+  TEAMS.forEach(t=>{
+    const members=PLAYERS.filter(p=>p.team_id===t.id);
+    const full=members.length>=MAX;
+    const div=document.createElement('div');
+    div.className='team';
+    div.style.borderColor=t.color;
+    div.innerHTML=`<span class="count ${full?'full':''}">${members.length}/${MAX}</span>
+      <div class="tname" style="color:${t.color}">${t.name}</div>
+      <div class="tgod">🐱 ${t.mascot} · ${t.god}</div>
+      ${members.length?`<ul>${members.map(m=>`<li>${escapeHtml(m.name)}</li>`).join('')}</ul>`:'<div class="empty">No explorers yet — be brave, be first.</div>'}`;
+    g.appendChild(div);
+  });
+
+  // team select
+  const sel=byId('team');const cur=sel.value;
+  sel.innerHTML='<option value="">— pick a guild —</option>'+
+    TEAMS.map(t=>{
+      const n=PLAYERS.filter(p=>p.team_id===t.id).length;
+      const full=n>=MAX;
+      return `<option value="${t.id}" ${full?'disabled':''}>${t.name} (${n}/${MAX})${full?' — FULL':''}</option>`;
+    }).join('');
+  sel.value=cur;
+
+  // form lock state
+  byId('formArea').style.opacity=LOCKED?'.45':'1';
+  byId('joinBtn').disabled=LOCKED;
+
+  // host panel
+  if(hostMode)renderHost();
+}
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+function showMsg(text,kind){
+  const m=byId('msg');m.className='msg '+(kind||'ok');m.textContent=text;
+  if(kind!=='err')setTimeout(()=>{m.className='msg';},6000);
+}
+
+async function joinTeam(){
+  if(LOCKED){showMsg('The roster is locked — talk to the host at the briefing.','err');return;}
+  const name=byId('name').value.trim().replace(/\s+/g,' ');
+  const team=byId('team').value;
+  if(name.length<2){showMsg('Please enter your name (2+ characters).','err');return;}
+  if(!team){showMsg('Pick a guild first!','err');return;}
+  const existing=PLAYERS.find(p=>p.name.toLowerCase()===name.toLowerCase());
+  const count=PLAYERS.filter(p=>p.team_id===team).length;
+  if(!existing&&count>=MAX){showMsg('That guild just filled up — pick another one.','err');loadAll();return;}
+  byId('joinBtn').disabled=true;
+  try{
+    if(existing){
+      if(existing.team_id===team){showMsg(`You're already in the ${teamName(team)}, ${name}!`,'ok');}
+      else{
+        const {error}=await c.from('players').update({team_id:team}).eq('id',existing.id);
+        if(error)throw error;
+        showMsg(`Switched! You're now in the ${teamName(team)}, ${name}. 🎉`,'ok');
+      }
+    }else{
+      const {error}=await c.from('players').insert({name:name,team_id:team});
+      if(error)throw error;
+      showMsg(`Welcome to the ${teamName(team)}, ${name}! 🐱 See you at the briefing — bandana + team sheet waiting.`,'ok');
+    }
+    byId('name').value='';
+  }catch(e){
+    showMsg('Something went wrong saving your name: '+(e.message||e),'err');
+  }
+  byId('joinBtn').disabled=LOCKED;
+  loadAll();
+}
+
+async function leaveGuild(){
+  if(LOCKED){showMsg('Roster is locked — the host can remove you at the briefing.','err');return;}
+  const name=byId('name').value.trim();
+  const existing=name?PLAYERS.find(p=>p.name.toLowerCase()===name.toLowerCase()):null;
+  if(!existing){showMsg('Type your name first, then tap Leave.','err');return;}
+  if(!confirm(`Remove ${existing.name} from the hunt?`))return;
+  const {error}=await c.from('players').delete().eq('id',existing.id);
+  if(error){showMsg('Could not remove you: '+error.message,'err');return;}
+  byId('name').value='';
+  showMsg(`Removed ${existing.name}. Cleocatra pretends not to notice. 🐱`,'ok');
+  loadAll();
+}
+
+async function sha256hex(text){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function hostLogin(){
+  const pin=byId('pin').value;
+  if(!pin){alert('Enter the host PIN');return;}
+  const hex=await sha256hex(pin);
+  if(hex===PINHASH){
+    hostMode=true;
+    byId('pinArea').style.display='none';
+    byId('hostpanel').classList.add('on');
+    renderHost();
+  }else{
+    alert('Wrong PIN.');
+    byId('pin').value='';
+  }
+}
+
+function renderHost(){
+  const list=byId('hostlist');
+  byId('lockBtn').textContent=LOCKED?'🔓 Unlock roster':'🔒 Lock roster';
+  if(!PLAYERS.length){list.innerHTML='<div class="hint">Nobody has joined yet.</div>';return;}
+  list.innerHTML=PLAYERS.map(p=>`
+    <div class="prow">
+      <span class="pname">${escapeHtml(p.name)}</span>
+      <select onchange="movePlayer('${p.id}',this.value)">
+        ${TEAMS.map(t=>`<option value="${t.id}" ${p.team_id===t.id?'selected':''}>${t.name}</option>`).join('')}
+      </select>
+      <button class="del" onclick="removePlayer('${p.id}')">Remove</button>
+    </div>`).join('');
+}
+
+async function movePlayer(id,team){
+  const {error}=await c.from('players').update({team_id:team}).eq('id',id);
+  if(error)alert('Move failed: '+error.message);
+  loadAll();
+}
+
+async function removePlayer(id){
+  const p=PLAYERS.find(x=>x.id===id);
+  const name=p?p.name:'this player';
+  if(!confirm(`Remove ${name} from the roster?`))return;
+  const {error}=await c.from('players').delete().eq('id',id);
+  if(error)alert('Remove failed: '+error.message);
+  loadAll();
+}
+
+async function toggleLock(){
+  const next=LOCKED?'false':'true';
+  const {error}=await c.from('settings').upsert({key:'roster_locked',value:next},{onConflict:'key'});
+  if(error){alert('Could not update lock: '+error.message);return;}
+  loadAll();
+}
+
+// live updates + polling fallback
+try{
+  c.channel('roster')
+    .on('postgres_changes',{event:'*',schema:'public',table:'players'},loadAll)
+    .on('postgres_changes',{event:'*',schema:'public',table:'settings'},loadAll)
+    .subscribe();
+}catch(e){console.warn('realtime unavailable',e);}
+loadAll();
+setInterval(loadAll,5000);
+</script>
+</body>
+</html>
