@@ -119,3 +119,90 @@ insert into public.teams (id, name, color, mascot, god, chant) values
   ('golden_jackals',   'Golden Jackals',   '#e0a800', 'Jackal',        'Anubis',  'Anubis guide, jackals gold — we sniff out treats like legends told!'),
   ('violet_vultures',  'Violet Vultures',  '#7d3c98', 'Vulture',       'Nekhbet', 'Circle high, swoop down low — Violet Vultures steal the show!')
 on conflict (id) do nothing;
+
+-- ============================================================
+-- PHONE GAME (game.html) + JOIN PAGE (join.html)
+-- Tables below are already live on the project; safe to re-run.
+-- ============================================================
+create table if not exists public.players (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (char_length(btrim(name)) between 1 and 60),
+  team_id text not null references public.teams(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+create index if not exists players_team_idx on public.players (team_id);
+
+create table if not exists public.settings (
+  key text primary key,
+  value text not null
+);
+
+create table if not exists public.stops_progress (
+  team_id text not null references public.teams(id) on delete cascade,
+  stop_number integer not null check (stop_number between 1 and 18),
+  riddle_solved boolean not null default false,
+  dare_done boolean not null default false,
+  attempts integer not null default 0,
+  lat double precision,
+  lng double precision,
+  solved_at timestamptz,
+  completed_at timestamptz,
+  primary key (team_id, stop_number)
+);
+
+create table if not exists public.game_meta (
+  team_id text primary key references public.teams(id) on delete cascade,
+  free_hints_left integer not null default 1,
+  gauntlet_card integer,
+  gauntlet_done boolean not null default false,
+  gauntlet_ms integer,
+  finished boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.finishes (
+  finish_order serial primary key,
+  team_id text not null unique references public.teams(id) on delete cascade,
+  finished_at timestamptz not null default now()
+);
+
+alter table public.players       enable row level security;
+alter table public.settings      enable row level security;
+alter table public.stops_progress enable row level security;
+alter table public.game_meta     enable row level security;
+alter table public.finishes      enable row level security;
+
+drop policy if exists "anon all players" on public.players;
+drop policy if exists "anon all settings" on public.settings;
+drop policy if exists "anon all stops_progress" on public.stops_progress;
+drop policy if exists "anon all game_meta" on public.game_meta;
+drop policy if exists "anon all finishes" on public.finishes;
+create policy "anon all players"        on public.players        for all using (true) with check (true);
+create policy "anon all settings"       on public.settings       for all using (true) with check (true);
+create policy "anon all stops_progress" on public.stops_progress for all using (true) with check (true);
+create policy "anon all game_meta"      on public.game_meta      for all using (true) with check (true);
+create policy "anon all finishes"       on public.finishes       for all using (true) with check (true);
+
+grant select, insert, update, delete on public.players        to anon, authenticated;
+grant select, insert, update, delete on public.settings       to anon, authenticated;
+grant select, insert, update, delete on public.stops_progress to anon, authenticated;
+grant select, insert, update, delete on public.game_meta      to anon, authenticated;
+grant select, insert, update, delete on public.finishes       to anon, authenticated;
+
+-- Host PIN (used by join.html + game.html). Default PIN: goblet
+insert into public.settings (key, value) values
+  ('roster_locked', 'false'),
+  ('host_pin_sha256', encode(sha256('goblet'::bytea), 'hex'))
+on conflict (key) do nothing;
+
+-- Realtime for live boards and the game (no-op if already present).
+do $$
+begin
+  foreach t in array array['players','settings','stops_progress','game_meta','finishes','teams','score_events']
+  loop
+    if not exists (select 1 from pg_publication_tables
+                   where pubname='supabase_realtime' and schemaname='public' and tablename=t) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $$;
