@@ -142,6 +142,9 @@
 const U='https://wmpksflzlyamjuiqmgle.supabase.co';
 const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcGtzZmx6bHlhbWp1aXFtZ2xlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NzQyODksImV4cCI6MjExMTA1MDI4OX0.lxkCKG9tdg_zCgGy29LGPAlkTQZCioy2fF3WQG-nosg';
 const c=supabase.createClient(U,K);
+/* Entry mode: ?mode=play → player view (no Host tab), ?mode=host → host
+   dashboard, plain game.html → everything (legacy). */
+const MODE=(new URLSearchParams(location.search).get('mode')||'').toLowerCase();
 const RELEASE={sapphire_scarabs:0,crimson_cobras:5,emerald_ibises:10,golden_jackals:15,violet_vultures:20};
 const LETTERS='GOLDENGELATOGOBLET'.split('');
 
@@ -326,7 +329,7 @@ async function ensureMeta(){
 }
 
 /* ============ NAV ============ */
-function go(tab){S.tab=tab;
+function go(tab){if(MODE==='play'&&tab==='host')tab='play';S.tab=tab;
   ['Play','Letters','Board','Host'].forEach(x=>{const b=$('tab'+x);if(b)b.classList.toggle('on',x.toLowerCase()===tab);});
   render();}
 function render(){
@@ -338,7 +341,8 @@ function render(){
   if(S.tab==='play')renderPlay();
   else if(S.tab==='letters')renderLetters();
   else if(S.tab==='board')renderBoard();
-  else renderHost();
+  else if(MODE==='host')renderHost();
+  else renderPlay();
 }
 function renderGate(){
   $('screen').innerHTML=`
@@ -1002,6 +1006,8 @@ try{
     .on('postgres_changes',{event:'*',schema:'public',table:'settings'},()=>loadAll())
     .subscribe();
 }catch(e){console.warn('realtime off',e);}
+if(MODE==='play'){const th=$('tabHost');if(th)th.style.display='none';}
+if(MODE==='host'){S.tab='host';}
 loadAll();
 setInterval(()=>{if(S.team)loadAll();},6000);
 </script>
