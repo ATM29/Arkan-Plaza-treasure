@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a5f5f" />
+<title>🎮 The Quest for the Golden Gelato Goblet</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --gold:#d4a017; --gold-light:#f3d27a; --teal:#0f8a8a; --teal-dark:#0a5f5f;
+    --sand:#f6efe1; --ink:#2b2118; --paper:#fffdf7; --red:#c0392b; --green:#2e8b57;
+    --accent:#0f8a8a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:"Segoe UI",Tahoma,Verdana,sans-serif;color:var(--ink);background:var(--sand);
+    line-height:1.45;padding-bottom:74px;min-height:100vh;}
+  .wrap{max-width:640px;margin:0 auto;padding:12px 12px 24px}
+  header.top{position:sticky;top:0;z-index:40;background:var(--teal-dark);color:#fff;
+    margin:-12px -12px 12px;padding:10px 14px;display:flex;align-items:center;gap:10px;
+    box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  header.top .team-pill{font-weight:800;font-size:14px;background:var(--accent);padding:5px 12px;border-radius:999px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+  header.top .score{margin-left:auto;font-weight:900;font-size:18px;color:var(--gold-light)}
+  header.top .score small{display:block;font-size:9px;font-weight:700;color:#cfe8e8;letter-spacing:1px}
+  .card{background:var(--paper);border:1px solid #e7ddc7;border-radius:14px;padding:16px;margin:12px 0;
+    box-shadow:0 3px 10px rgba(0,0,0,.05)}
+  h1{font-size:22px;margin:.2em 0;color:var(--teal-dark)}
+  h2{font-size:17px;margin:0 0 8px;color:var(--teal-dark);border-bottom:3px solid var(--gold);padding-bottom:6px}
+  .act-badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:1.5px;border-radius:999px;
+    padding:3px 12px;background:var(--gold);color:#3a2c00;margin-bottom:8px}
+  .act-badge.a2{background:var(--teal);color:#fff}
+  .stopnum{display:inline-flex;width:44px;height:44px;border-radius:50%;background:var(--teal);color:#fff;
+    font-weight:900;font-size:20px;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+  .riddle{background:#fdf8ea;border:1px dashed var(--gold);border-radius:10px;padding:14px;font-style:italic;
+    font-size:16.5px;white-space:pre-line;margin:10px 0;color:#4a3b22}
+  .dare{background:#eef8f8;border-left:5px solid var(--teal);border-radius:8px;padding:12px 14px;font-size:15px;margin:10px 0}
+  .bonus{font-size:13px;color:#7a6a4f;margin-top:6px;font-style:italic}
+  input[type=text]{width:100%;padding:14px 12px;border-radius:10px;border:2px solid #d8cba9;font-size:17px;background:#fff}
+  input[type=text]:focus{outline:none;border-color:var(--teal)}
+  .btn{display:block;width:100%;border:none;border-radius:11px;padding:15px;font-size:16px;font-weight:800;
+    cursor:pointer;text-align:center;text-decoration:none;margin-top:10px}
+  .btn:disabled{opacity:.5}
+  .btn.main{background:var(--teal);color:#fff}
+  .btn.gold{background:var(--gold);color:#3a2c00}
+  .btn.ghost{background:#fff;color:var(--teal-dark);border:2px solid var(--teal)}
+  .btn.danger{background:#fff;color:var(--red);border:2px solid var(--red)}
+  .btn.small{display:inline-block;width:auto;padding:9px 14px;font-size:13px;border-radius:9px;margin-top:6px}
+  .row{display:flex;gap:8px}.row .btn{margin-top:0}
+  .msg{border-radius:10px;padding:10px 12px;margin-top:10px;font-weight:700;font-size:14px;display:none}
+  .msg.show{display:block}
+  .msg.ok{background:#e9f7ef;border:1px solid var(--green);color:#1c6b41}
+  .msg.err{background:#fdeef2;border:1px solid var(--red);color:#a5281b}
+  .msg.info{background:#eef8f8;border:1px solid var(--teal);color:var(--teal-dark)}
+  .teamgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .teamcard{border-radius:14px;padding:16px 10px;text-align:center;border:3px solid;cursor:pointer;background:#fff}
+  .teamcard:active{transform:scale(.97)}
+  .teamcard .ic{font-size:30px}
+  .teamcard .tn{font-weight:900;font-size:14px;margin-top:4px}
+  .teamcard .tg{font-size:11px;color:#7a6a4f}
+  .countdown{font-size:44px;font-weight:900;color:var(--teal-dark);text-align:center;
+    font-family:"Courier New",monospace;letter-spacing:2px;margin:14px 0 4px}
+  .letters{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0}
+  .lbox{width:40px;height:52px;border-radius:8px;background:#efe6cf;border:2px solid #d8cba9;
+    display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#c3b691;
+    position:relative}
+  .lbox.on{background:var(--gold);border-color:#b8860b;color:#3a2c00;animation:pop .4s ease}
+  .lbox .n{position:absolute;top:-7px;left:-5px;background:var(--teal-dark);color:#fff;font-size:9px;
+    border-radius:6px;padding:1px 4px;font-weight:700}
+  .lbox.gap{margin-right:14px}
+  @keyframes pop{0%{transform:scale(.3) rotate(-12deg);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+  .words{display:flex;justify-content:center;gap:26px;font-weight:900;font-size:20px;color:var(--teal-dark);letter-spacing:3px}
+  .words span.gapw{border-bottom:3px solid var(--gold);padding-bottom:2px}
+  .reveal{position:fixed;inset:0;background:rgba(10,60,60,.92);z-index:100;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px;animation:fade .3s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .reveal .big{font-size:120px;font-weight:900;color:var(--gold-light);animation:pop .6s ease;text-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .reveal .rw{font-size:20px;font-weight:800;margin-top:8px}
+  .progressbar{height:10px;background:#e5dcc4;border-radius:999px;overflow:hidden;margin:8px 0 4px}
+  .progressbar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:999px;transition:width .5s}
+  .progress-note{font-size:12px;color:#7a6a4f;text-align:right}
+  nav.bot{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #e0d5b8;z-index:50;
+    display:flex;padding-bottom:env(safe-area-inset-bottom)}
+  nav.bot button{flex:1;background:none;border:none;padding:10px 2px 8px;font-size:11px;font-weight:800;
+    color:#8a7a5c;cursor:pointer}
+  nav.bot button .ic{display:block;font-size:20px}
+  nav.bot button.on{color:var(--teal-dark)}
+  nav.bot button.on .ic{transform:translateY(-2px)}
+  .lbrow{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid #efe6cf}
+  .lbrow .rk{width:30px;height:30px;border-radius:50%;background:var(--teal-dark);color:#fff;font-weight:900;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  .lbrow .nm{font-weight:800;font-size:14px;flex:1}
+  .lbrow .nm small{display:block;font-weight:600;font-size:11px;color:#7a6a4f}
+  .lbrow .pts{font-weight:900;font-size:16px;color:var(--teal-dark)}
+  .lbrow.me{background:#fdf6e3;border-radius:10px}
+  .pill{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;color:#fff;vertical-align:middle}
+  .timer{font-size:40px;font-weight:900;text-align:center;font-family:"Courier New",monospace;color:var(--teal-dark)}
+  .timer.low{color:var(--red);animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.4}}
+  .gcard{background:linear-gradient(135deg,#fffdf7,#fdf3d8);border:2px solid var(--gold);border-radius:14px;
+    padding:16px;margin:10px 0;box-shadow:0 6px 18px rgba(0,0,0,.1)}
+  .gcard h3{margin:0 0 8px;color:#3a2c00;font-size:16px}
+  .qlabel{font-size:13px;font-weight:800;color:var(--teal-dark);margin-top:12px}
+  .qtext{font-size:15px;font-weight:700;margin:3px 0 6px}
+  .hostbox details summary{cursor:pointer;font-weight:800;font-size:14px;color:#7a6a4f}
+  .hidden{display:none!important}
+  .stamp{font-size:44px;text-align:center}
+  .tiny{font-size:12px;color:#7a6a4f}
+  .center{text-align:center}
+  .roster-chip{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  .roster-chip span{font-size:11px;background:#efe6cf;border-radius:999px;padding:3px 9px;font-weight:700;color:#5a4a32}
+  .wrong-shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  @media print{nav.bot,header.top{display:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="team-pill" id="teamPill">🐱 Pick a guild</span>
+  <span class="score" id="scoreBox"><span id="scoreVal">0</span><small>POINTS</small></span>
+</header>
+
+<div class="wrap">
+  <div id="msg" class="msg"></div>
+  <div id="screen"><div class="card center">Loading the hunt…</div></div>
+</div>
+
+<nav class="bot">
+  <button id="tabPlay" class="on" onclick="go('play')"><span class="ic">🎮</span>Play</button>
+  <button id="tabLetters" onclick="go('letters')"><span class="ic">🔤</span>Letters</button>
+  <button id="tabBoard" onclick="go('board')"><span class="ic">🏆</span>Board</button>
+  <button id="tabHost" onclick="go('host')"><span class="ic">🔐</span>Host</button>
+</nav>
+
+<input type="file" id="camera" accept="image/*" capture="environment" class="hidden" onchange="onPhoto(event)" />
+
+<script>
+/* ============ CONFIG ============ */
+const U='https://wmpksflzlyamjuiqmgle.supabase.co';
+const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtcGtzZmx6bHlhbWp1aXFtZ2xlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NzQyODksImV4cCI6MjExMTA1MDI4OX0.lxkCKG9tdg_zCgGy29LGPAlkTQZCioy2fF3WQG-nosg';
+const c=supabase.createClient(U,K);
+const RELEASE={sapphire_scarabs:0,crimson_cobras:5,emerald_ibises:10,golden_jackals:15,violet_vultures:20};
+const LETTERS='GOLDENGELATOGOBLET'.split('');
+
+const STOPS=[
+{n:1,loc:'The Grand Fountain & Main Courtyard',letter:'G',tier:1,
+ riddle:"I am the pulse where Arkan's veins all meet,\nwhere water leaps and strangers greet.\nStand where the plaza's heartbeat sounds —\nyour quest begins on hallowed grounds.",
+ dare:'Huddle-photo with the fountain/courtyard — everyone points at the water like they just discovered it.',
+ bonus:'★ Name the fountain something absurd (e.g. "Lake Cleocatra") and shout it 3× together. (+1)',
+ ans:['fountain','grand fountain','main fountain','courtyard','main courtyard','theatro']},
+{n:2,loc:'Paul — The French Bakery & Café',letter:'O',tier:1,
+ riddle:"From Paris I came with butter and pride,\nmy croissants flake on the Egyptian side.\nFind the café where the Eiffel meets the Nile —\nand don't leave without a flaky smile.",
+ dare:'Photo of everyone mime-eating an invisible croissant with maximum fancy.',
+ bonus:'★ Say "Bonjour Arkan!" in a terrible French accent. (+1)',
+ ans:['paul','paul bakery','paul cafe']},
+{n:3,loc:'Dipndip — The Chocolate Lab',letter:'L',tier:1,
+ riddle:"I dip, I drip, I melt with glee,\nchocolate crepes are the key to me.\nFollow the cocoa river of dreams\nto the sweetest stop in Arkan's streams.",
+ dare:'Freeze like a chocolate-fountain statue — everyone strikes a pose, hold 10 seconds — photo.',
+ bonus:'★ One member licks the air like it\'s a giant dipping strawberry. (+1)',
+ ans:['dipndip','dip n dip','dipndip chocolate']},
+{n:4,loc:'Cima Arkan — The Cinema',letter:'D',tier:1,
+ riddle:"Seven halls and a VIP throne,\nthe loudest silence the west side has known.\nWhere stories flicker bright and tall —\nfind the biggest screen of them all.",
+ dare:'Red-carpet pose at the cinema entrance; one member announces the team in a deep movie-trailer voice.',
+ bonus:'★ Entire team does the "popcorn explosion" jump. (+1)',
+ ans:['cima','cima arkan','cinema','premiere','premiere cinemas']},
+{n:5,loc:'Kazoku — Japanese / Asian',letter:'E',tier:1,
+ riddle:"From the land where the sun climbs high,\nI roll my rice and let flavors fly.\nFind the spot where the chopsticks rest\nand bow to the kitchen's very best.",
+ dare:'Bow to each other like samurai; synchronized "konnichiwa" wave — photo.',
+ bonus:'★ One member says a Japanese food word correctly (sushi / ramen / matcha). (+1)',
+ ans:['kazoku']},
+{n:6,loc:'Zooba — Egyptian Street Food',letter:'N',tier:1,
+ riddle:"I'm Egypt on a plate with a street-food crown:\ntaameya crisp and koshari brown.\nFind the most Egyptian kitchen around\nwhere ful and falafel reign unbound.",
+ dare:'Photo of the team doing the "baladi bounce" (a silly local shuffle dance).',
+ bonus:'★ Shout "Yalla!" like you mean it, then translate it. (+1)',
+ ans:['zooba']},
+{n:7,loc:'Corners Market — Gourmet Corner',letter:'G',tier:1,
+ riddle:"My name has corners but I'm no square —\nI'm packed with treats beyond compare.\nFind the market hiding in the plaza's care\nwhere foodies gawk and grazers glare.",
+ dare:'Each member finds & photos ONE weird/luxury food item (truffle, fancy cheese, exotic fruit…).',
+ bonus:'★ Correctly name another team\'s weird item. (+2)',
+ ans:['corners market','corners','gourmet corner']},
+{n:8,loc:'Crowne Plaza West Cairo Arkan — IHG Hotel',letter:'E',tier:1,
+ riddle:"A crown of rest where travelers stay,\npillows and lobbies guard the day.\nBow to the royal hotel door —\nyour next clue lives on the royal floor.",
+ dare:'Team photo doing a royal bow/curtsy at the hotel entrance (quietly — guests are sleeping off jet lag).',
+ bonus:'★ One member gives a 10-second "Pharaoh of Arkan" acceptance speech. (+2)',
+ ans:['crowne plaza','crowne','ihg','west cairo','crowne plaza arkan']},
+{n:9,loc:'Jones the Grocer — Australian Gourmet',letter:'L',tier:1,
+ riddle:"A grocer from down under with a baker's heart,\nfresh bread and deli are my fine art.\nFind the Aussie with the savory smell —\nwhere floury miracles always sell.",
+ dare:'Photo of the team smelling bread dramatically (eyes closed, blissful).',
+ bonus:'★ Attempt an Australian accent: "G\'day, one meat pie, mate." (+1)',
+ ans:['jones','jones the grocer','grocer']},
+{n:10,loc:'The Arcade / Play N Trade Egypt',letter:'A',tier:1,
+ riddle:"Beeps, blips, and tickets to win;\nI light up faces with a playful grin.\nWhere gamers, kids, and joysticks convene,\nfind me blinking between the scenes.",
+ dare:'Team photo, everyone mid-"game face" (tongue out / focused squint).',
+ bonus:'★ One member does a victory dance like they just beat the high score. (+1)',
+ ans:['arcade','play n trade','playntrade']},
+{n:11,loc:'Coffee Berry',letter:'T',tier:1,
+ riddle:"Bean and brew to wake the soul,\nI keep tired explorers whole.\nFind the berry that fuels the quest\nand watch sleepy teams pass my test.",
+ dare:'Group photo toasting with empty "invisible coffee cups."',
+ bonus:'★ Everyone says their order in one synchronized chant. (+1)',
+ ans:['coffee berry','coffeeberry']},
+{n:12,loc:"Lucille's Diner — American",letter:'O',tier:1,
+ riddle:"Pancakes stacked to the desert sky,\ndiner style with a wink and a sigh.\nFind the American dream on a plate —\nsyrup, burgers, and a milkshake fate.",
+ dare:"Team photo doing a diner \"whistle for the waitress\" pose.",
+ bonus:'★ Best fake-American "Hey darlin\', refill please!" (+1)',
+ ans:['lucille','lucilles','diner']},
+{n:13,loc:"Gigi's — Burger Legend",letter:'G',tier:2,
+ riddle:"Named after a legend of burger fame,\none bite and the plaza knows my name.\nFind the joint where the angry patties grin —\nand where the queue never thins.",
+ dare:'CAT TAX — The Scaredy-Cat Arch: everyone hunches, arched backs, mid-hiss at the camera, 3 seconds — photo.',
+ bonus:'★ Name your team\'s signature burger in a dramatic movie voice. (+2)',
+ ans:['gigis','gigi','gigi burger']},
+{n:14,loc:'Osana Family Wellness Café',letter:'O',tier:2,
+ riddle:"Smoothies, stretches, and a zen-ish zen,\nwellness is my religion and I'm its den.\nFind the café where chill is the game\nand kids play while adults regain… their calm.",
+ dare:'CAT TAX — Cat Yoga: team flows from downward-dog into a full arched-back cat stretch, held 5s — photo.',
+ bonus:'★ Each member whispers their "aura color" to the camera. (+2)',
+ ans:['osana','wellness cafe','osana family']},
+{n:15,loc:'TBS — The Bakery Shop',letter:'B',tier:2,
+ riddle:"Three letters on my sign, but forty doughs are mine.\nWhere dough rises and cinnamon sings,\nfind me where the baguettes align —\nthe bakery with the tidiest wings.",
+ dare:'CAT TAX — The Human Croissant: the whole team curls into a spiral on the ground, head to tail, photographed from above.',
+ bonus:'★ Best fake French-baker laugh ("heh heh heh"). (+2)',
+ ans:['tbs','the bakery shop','bakery shop']},
+{n:16,loc:'Leila Min Lebnen — Lebanese',letter:'L',tier:2,
+ riddle:"From Lebanon with love and mezze grand,\nhummus mountains in a garlicky land.\nFind the cozy corner of Arabic finesse —\nwhere every plate is a big 'habibi' yes.",
+ dare:'CAT TAX — The Hummus Facial: everyone applies a luxurious hummus mask pose, eyes blissfully closed — photo.',
+ bonus:'★ Whole team roars "Yalla habibi!" in perfect sync. (+2)',
+ ans:['leila','min lebnen','leila min lebnen']},
+{n:17,loc:'Eatery — International, Open Kitchen',letter:'E',tier:2,
+ riddle:"Sushi, pasta, steak, and pie,\nmy open kitchen lets you watch them fry.\nI'm the plaza's eat-and-greet, the liveliest spot to meet —\nfind me hungry, leave me complete.",
+ dare:'CAT TAX — The Foodie Faint: the team sniffs an invisible dish and dramatically faints (safely!) — photo.',
+ bonus:'★ Improvise a 10-second snooty food review of the plaza. (+2)',
+ ans:['eatery','the eatery']},
+{n:18,loc:"Ted's — All-Day Breakfast & Bakery",letter:'T',tier:2,
+ riddle:"All-day breakfast and pastries divine,\nI'm the last stop in this feline design.\nFind Ted's corner of eggs and bread —\nthen RACE to the courtyard where your quest started instead!",
+ dare:'CAT TAX — The Pancake Stack: team stacks hands into a towering pancake pile, someone mimes the syrup pour — photo.',
+ bonus:'★ Whole team barks "GOBLET!" in a trailer voice. (+2)',
+ ans:['teds','ted','teds bakery']}
+];
+
+const GCARDS=[
+{id:1,title:'🃏 Card 1 — Mummy Wrap Race',body:'Wrap one teammate in toilet paper from head to toe in 90 seconds. They must shamble three steps and say "I wake… for gelato."',type:'physical'},
+{id:2,title:'🃏 Card 2 — The Sphinx\'s Riddle',body:'Answer the Sphinx\'s riddle to pass. Wrong = hiss at your own shadow for 10 seconds, then try again.',type:'riddle'},
+{id:3,title:'🃏 Card 3 — Scarab Roll',body:'Roll a ball (or a fruit) across the courtyard to a line and back using only a stick — no hands. Dropping it = start over with a dramatic scarab death pose first.',type:'physical'},
+{id:4,title:'🃏 Card 4 — Canopic Jar Quiz',body:'Five rapid-fire questions. Need 4 of 5. Shouting answers in unison encouraged.',type:'quiz'},
+{id:5,title:"🃏 Card 5 — Cleocatra's Catwalk",body:'Strut a 5-meter catwalk to the beat (someone hums), ending in a pose + one perfect purr into the camera.',type:'physical'},
+{id:6,title:'🃏 Card 6 — The Sacred Meow Choir',body:'The whole team sings their team chant — but every word is "meow." The host must be seen wiping away a tear.',type:'physical'}
+];
+const SPHINX=[
+{q:'What has keys but opens no door, and is full of beans at Arkan?',a:['piano','coffee berry']},
+{q:'The more you take, the more you leave behind.',a:['footprints','footsteps']},
+{q:'What gets wetter the more it dries?',a:['towel']},
+{q:'Cities without houses, water without fish, mountains without trees.',a:['map']},
+{q:'I have a head and a tail, but no body.',a:['coin']}
+];
+const QUIZ=[
+{q:'Which pharaoh\'s pyramid stands at Giza?',a:['khufu','cheops']},
+{q:'How many lives does a cat have?',a:['9','nine']},
+{q:'How many screens does Cima Arkan have?',a:['7','seven']},
+{q:'How many teams hunt today?',a:['5','five']},
+{q:'What does "yalla" mean?',a:['lets go','hurry up','yalla','go','come on','comeon']}
+];
+const FINAL_WORDS='golden gelato goblet';
+const FINISH_PTS={1:10,2:6,3:3};
+
+/* ============ STATE ============ */
+let S={team:localStorage.getItem('ght_team')||null,teams:[],progress:[],meta:null,events:[],settings:{},
+       finishes:[],players:[],tab:'play',hostMode:false,playView:'riddle',curStop:null,reveal:null,
+       photo:null,gauntletPick:null,gTimer:null,gStart:0,waitTimer:null,hintMsg:'',wrongN:0,quiz:{},justDone:null};
+let lastData='';
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function showMsg(t,kind){const m=$('msg');m.className='msg show '+(kind||'ok');m.textContent=t;
+  if(kind!=='err')setTimeout(()=>{m.className='msg';},5000);}
+function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim().replace(/^the /,'');}
+function team(){return S.teams.find(t=>t.id===S.team);}
+function releaseTime(){const st=S.settings.hunt_started_at;if(!st)return null;
+  const off=(RELEASE[S.team]||0)*60000;return new Date(st).getTime()+off;}
+function fullyDone(n){const p=S.progress.find(x=>x.stop_number===n);return !!(p&&p.riddle_solved&&p.dare_done);}
+function activeStop(){for(let n=1;n<=18;n++)if(!fullyDone(n))return n;return 0;}
+function curStop(){const a=activeStop();return a||18;}
+function letterOn(n){const p=S.progress.find(x=>x.stop_number===n);return !!(p&&p.dare_done);}
+function lettersCount(){let k=0;for(let n=1;n<=18;n++)if(letterOn(n))k++;return k;}
+function myScore(){return S.events.filter(e=>e.team_id===S.team).reduce((a,e)=>a+e.points,0);}
+function totalFor(tid){return S.events.filter(e=>e.team_id===tid).reduce((a,e)=>a+e.points,0);}
+function gauntletDone(){return !!(S.meta&&S.meta.gauntlet_done);}
+function finished(){return !!(S.meta&&S.meta.finished);}
+function tierPts(t){return t===2?8:5;}
+
+/* ============ DATA ============ */
+async function loadAll(){
+  const [t,p,pr,m,e,s,f,pl]=await Promise.all([
+    c.from('teams').select('*').order('name'),
+    c.from('players').select('*'),
+    c.from('stops_progress').select('*'),
+    c.from('game_meta').select('*'),
+    c.from('score_events').select('*'),
+    c.from('settings').select('*'),
+    c.from('finishes').select('*').order('finish_order'),
+    c.from('teams').select('id').limit(1)
+  ]);
+  const errs=[];
+  if(t.error)errs.push('teams: '+t.error.message);
+  if(pr.error)errs.push('progress: '+pr.error.message);
+  if(m.error)errs.push('meta: '+m.error.message);
+  if(e.error)errs.push('events: '+e.error.message);
+  if(s.error)errs.push('settings: '+s.error.message);
+  if(f.error)errs.push('finishes: '+f.error.message);
+  if(errs.length){showMsg('Could not load: '+errs.join(' · '),'err');return;}
+  S.teams=t.data||[];S.players=p.data||[];S.progress=pr.data||[];S.meta=(m.data||[]).find(x=>x.team_id===S.team)||null;
+  S.events=e.data||[];S.settings={};(s.data||[]).forEach(r=>S.settings[r.key]=r.value);
+  S.finishes=f.data||[];
+  if(S.team&&!S.meta){await ensureMeta();}
+  const sig=JSON.stringify([S.progress,S.events,S.settings,S.finishes,S.meta,S.players,
+    S.teams.map(t=>t.id)]);
+  if(sig!==lastData){lastData=sig;render();}
+}
+async function ensureMeta(){
+  const t=S.team;if(!t)return;
+  const free=t==='emerald_ibises'?2:1;
+  const {error}=await c.from('game_meta').upsert({team_id:t,free_hints_left:free},{onConflict:'team_id'});
+  if(!error){const r=await c.from('game_meta').select('*').eq('team_id',t);S.meta=(r.data||[])[0]||null;}
+}
+
+/* ============ NAV ============ */
+function go(tab){S.tab=tab;
+  ['Play','Letters','Board','Host'].forEach(x=>{const b=$('tab'+x);if(b)b.classList.toggle('on',x.toLowerCase()===tab);});
+  render();}
+function render(){
+  const t=team();
+  $('teamPill').textContent=t?`${t.mascot} ${t.name}`:'🐱 Pick a guild';
+  $('teamPill').style.background=t?t.color:'var(--accent)';
+  $('scoreVal').textContent=S.team?myScore():'–';
+  if(!S.team){renderGate();return;}
+  if(S.tab==='play')renderPlay();
+  else if(S.tab==='letters')renderLetters();
+  else if(S.tab==='board')renderBoard();
+  else renderHost();
+}
+function renderGate(){
+  $('screen').innerHTML=`
+  <div class="card center">
+    <div style="font-size:44px">🐱🍦</div>
+    <h1>The Golden Gelato Goblet</h1>
+    <p class="tiny">Pick your guild to play. Everyone on the team can use the same guild on their own phones — progress syncs live.</p>
+    <div class="teamgrid" id="tg"></div>
+    <p class="tiny" style="margin-top:12px">Not on the roster yet? <a href="join.html" style="color:var(--teal-dark);font-weight:800">Join a Guild first →</a></p>
+  </div>`;
+  const g=$('tg');g.innerHTML='';
+  S.teams.forEach(t=>{
+    const n=S.players.filter(p=>p.team_id===t.id).length;
+    const d=document.createElement('div');
+    d.className='teamcard';d.style.borderColor=t.color;d.style.color=t.color;
+    d.innerHTML=`<div class="ic">${t.mascot.split(' ')[0]}</div><div class="tn">${esc(t.name)}</div>
+      <div class="tg">${esc(t.god)} · ${n} joined</div>`;
+    d.onclick=()=>pickTeam(t.id);
+    g.appendChild(d);
+  });
+}
+async function pickTeam(id){
+  S.team=id;localStorage.setItem('ght_team',id);
+  await ensureMeta();await loadAll();go('play');
+}
+function changeTeam(){localStorage.removeItem('ght_team');S.team=null;S.meta=null;render();}
+
+/* ============ WAIT / RELEASE ============ */
+function renderWait(msLeft,started){
+  const t=team();
+  const mm=String(Math.floor(msLeft/60000)).padStart(2,'0');
+  const ss=String(Math.floor((msLeft%60000)/1000)).padStart(2,'0');
+  $('screen').innerHTML=`
+  <div class="card center">
+    <div style="font-size:40px">⏳</div>
+    <h1>${started?'Your guild hasn\'t been released yet':'Waiting for the host to start the hunt'}</h1>
+    ${started?`<p class="tiny">${esc(t.name)} is released at <b>T+${RELEASE[S.team]}:00</b> from Stop 1 (the Grand Fountain).</p>
+      <div class="countdown">${mm}:${ss}</div>
+      <p class="tiny">Stretch. Hydrate. Practice your chant.</p>`:
+      `<p class="tiny">The host opens the <b>🔐 Host</b> tab and taps <b>▶️ Start the hunt</b> — then the release clock begins for all five guilds.</p>`}
+    <button class="btn ghost small" onclick="changeTeam()">Not ${esc(t.name)}? Switch guild</button>
+  </div>`;
+}
+function tickWait(){
+  if(!S.team||S.tab!=='play')return;
+  const st=S.settings.hunt_started_at;
+  if(!st){renderWait(0,false);return;}
+  const rel=releaseTime();const left=rel-Date.now();
+  if(left>0)renderWait(left,true);
+}
+
+/* ============ PLAY ============ */
+function renderPlay(){
+  if(S.waitTimer){clearInterval(S.waitTimer);S.waitTimer=null;}
+  if(!S.settings.hunt_started_at){renderWait(0,false);S.waitTimer=setInterval(tickWait,1000);return;}
+  if(releaseTime()>Date.now()){tickWait();S.waitTimer=setInterval(tickWait,1000);return;}
+  if(finished()){renderFinished();return;}
+  if(S.reveal){renderReveal();return;}
+  if(S.justDone){const j=S.justDone;renderDoneCard(STOPS[j-1],j);return;}
+  let n=activeStop();
+  if(n===0){renderFinale();return;}
+  if(n>=13&&!gauntletDone()){renderGauntlet();return;}
+  const st=STOPS[n-1];
+  const pr=S.progress.find(p=>p.stop_number===n);
+  if(pr&&pr.riddle_solved&&!pr.dare_done){renderDare(st);return;}
+  if(pr&&pr.riddle_solved&&pr.dare_done){renderDoneCard(st,n);return;}
+  renderRiddle(st);
+}
+function progressNote(){
+  const done=lettersCount();
+  return `<div class="progressbar"><i style="width:${done/18*100}%"></i></div>
+  <div class="progress-note">${done}/18 letters · ${S.teams.length} guilds hunting</div>`;
+}
+function renderRiddle(st){
+  const pr=S.progress.find(p=>p.stop_number===st.n)||{};
+  const hints=S.meta?S.meta.free_hints_left:1;
+  $('screen').innerHTML=`
+  <div class="card">
+    <span class="act-badge ${st.tier===2?'a2':''}">${st.tier===2?'ACT II · GOBLET':'ACT I · GOLDEN GELATO'}</span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="stopnum">${st.n}</span>
+      <b style="font-size:14px;color:#5a4a32">Solve the riddle → find the venue → do the dare</b>
+    </div>
+    ${progressNote()}
+    <div class="riddle">${esc(st.riddle)}</div>
+    <div id="ansBox">
+      <input type="text" id="ansIn" placeholder="Type the venue name…" autocomplete="off" autocapitalize="none" />
+      <button class="btn main" onclick="submitAnswer(${st.n})">Unlock the letter 🔓</button>
+      <div class="row" style="margin-top:8px">
+        <button class="btn ghost small" onclick="useHint(${st.n})">🐾 Whisker hint ${hints>0?'(free)':'(−2)'}</button>
+      </div>
+      ${S.hintMsg?`<div class="msg show info">${esc(S.hintMsg)}</div>`:''}
+    </div>
+    <div class="msg" id="playMsg"></div>
+    <p class="tiny" style="margin-top:10px">💡 Say it out loud first — the riddle knows. Stuck? Ask a shop, a pigeon, or your fellow explorers. (No Googling! −3)</p>
+  </div>`;
+  const i=$('ansIn');if(i){i.addEventListener('keydown',e=>{if(e.key==='Enter')submitAnswer(st.n);});}
+}
+function pmsg(t,kind){const m=$('playMsg');if(!m)return;m.className='msg show '+(kind||'err');m.textContent=t;}
+async function submitAnswer(n){
+  const st=STOPS[n-1];const raw=$('ansIn').value;const na=norm(raw);
+  if(!na){pmsg('Type an answer first — Cleocatra is watching.','err');return;}
+  const ok=st.ans.some(a=>{const x=norm(a);return x&&((na.length>=4&&x.includes(na))||(x.length>=4&&na.includes(x)));});
+  const pr=S.progress.find(p=>p.stop_number===n);
+  if(!ok){
+    S.wrongN++;
+    const box=$('ansBox');box.classList.remove('wrong-shake');void box.offsetWidth;box.classList.add('wrong-shake');
+    if(!pr){await c.from('stops_progress').upsert({team_id:S.team,stop_number:n,attempts:1},{onConflict:'team_id,stop_number'});}
+    else{await c.from('stops_progress').update({attempts:(pr.attempts||0)+1}).eq('team_id',S.team).eq('stop_number',n);}
+    pmsg(S.wrongN%3===2?'Cleocatra laughs. That\'s not it — try again! 🐾':'Not that one. Read the riddle again…','err');
+    return;
+  }
+  // solved — first-writer guard
+  let lat=null,lng=null;
+  try{const pos=await new Promise((res,rej)=>{if(!navigator.geolocation)return rej();
+    navigator.geolocation.getCurrentPosition(p=>res(p),()=>rej(),{timeout:6000,maximumAge:30000});});
+    lat=pos.coords.latitude;lng=pos.coords.longitude;}catch(e){}
+  const up=c.from('stops_progress').update({riddle_solved:true,solved_at:new Date().toISOString(),lat,lng})
+    .eq('team_id',S.team).eq('stop_number',n).eq('riddle_solved',false).select();
+  const {data,error}=await up;
+  if(error){pmsg('Network hiccup: '+error.message,'err');return;}
+  if(!data||!data.length){await loadAll();pmsg('Already solved — on to the dare!','ok');S.playView='dare';render();return;}
+  const pts=tierPts(st.tier);
+  await c.from('score_events').insert({team_id:S.team,stop_number:n,points:pts,description:`Stop ${n} riddle solved`});
+  S.reveal={letter:st.letter,n:n};
+  await loadAll();
+  renderReveal();
+}
+function renderReveal(){
+  const r=S.reveal;
+  const d=document.createElement('div');d.className='reveal';d.id='revealOv';
+  d.innerHTML=`<div class="tiny" style="color:#cfe8e8;letter-spacing:3px">STOP ${r.n} CLEARED · +${tierPts(STOPS[r.n-1].tier)}</div>
+    <div class="big">${r.letter}</div>
+    <div class="rw">Letter ${r.n} of 18 secured!</div>
+    <button class="btn gold" style="max-width:280px;margin-top:26px" onclick="closeReveal()">Now do the dare 📸</button>`;
+  document.body.appendChild(d);
+}
+function closeReveal(){const d=$('revealOv');if(d)d.remove();S.reveal=null;S.playView='dare';
+  const n=curStop();renderDare(STOPS[n-1]);}
+function renderDare(st){
+  $('screen').innerHTML=`
+  <div class="card">
+    <span class="act-badge ${st.tier===2?'a2':''}">${st.tier===2?'ACT II · CAT TAX':'ACT I · DARE'}</span>
+    <div style="display:flex;align-items:center;gap:10px"><span class="stopnum">${st.n}</span>
+    <b style="font-size:14px;color:#5a4a32">${esc(st.loc)}</b></div>
+    <div class="dare"><b>Dare:</b> ${esc(st.dare)}</div>
+    <p class="bonus">${esc(st.bonus)}</p>
+    ${S.photo?`<img src="${S.photo}" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin-top:8px" />`:''}
+    <button class="btn main" onclick="$('camera').click()">${S.photo?'📷 Retake photo':'📷 Take the dare photo'}</button>
+    ${S.photo?`<button class="btn gold" onclick="acceptDare(${st.n})">✓ Photo looks glorious — claim the points</button>`:''}
+    <p class="tiny" style="margin-top:10px">The roaming host may demand to see this photo later. Keep it on your roll. 🐱</p>
+  </div>`;
+}
+function onPhoto(ev){
+  const f=ev.target.files&&ev.target.files[0];if(!f)return;
+  S.photo=URL.createObjectURL(f);
+  const n=curStop();renderDare(STOPS[n-1]);
+}
+async function acceptDare(n){
+  const st=STOPS[n-1];
+  const {data,error}=await c.from('stops_progress').update({dare_done:true,completed_at:new Date().toISOString()})
+    .eq('team_id',S.team).eq('stop_number',n).eq('dare_done',false).eq('riddle_solved',true).select();
+  if(error){pmsg('Save failed: '+error.message,'err');return;}
+  if(data&&data.length){
+    const pts=tierPts(st.tier);
+    await c.from('score_events').insert({team_id:S.team,stop_number:n,points:pts,description:`Stop ${n} dare complete`});
+    S.photo=null;S.playView='riddle';S.hintMsg='';S.justDone=n;
+    await loadAll();
+    showMsg(`Letter ${st.letter} earned! +${pts} — next stop unlocked. 🐱`,'ok');
+    go('play');
+  }else{S.photo=null;await loadAll();go('play');}
+}
+function renderDoneCard(st,n){
+  $('screen').innerHTML=`
+  <div class="card center">
+    <div class="stamp">✅</div>
+    <h1>Stop ${n} complete</h1>
+    <p><b>${esc(st.loc)}</b></p>
+    <p class="tiny">Letter <b>${st.letter}</b> in the pouch · points banked</p>
+    ${progressNote()}
+    ${n<18?`<button class="btn main" onclick="S.justDone=null;S.playView='riddle';render()">Next stop → ${n+1} 🐾</button>`:
+      `<button class="btn gold" onclick="S.justDone=null;render()">All stops done — go to the finale 🏁</button>`}
+  </div>`;
+}
+async function useHint(n){
+  const st=STOPS[n-1];const canon=norm(st.ans[0]).replace(/\s/g,'');
+  const clue=`🐾 Clue: starts with "${canon[0].toUpperCase()}" · ${canon.length} letters`;
+  if(S.meta&&S.meta.free_hints_left>0){
+    await c.from('game_meta').update({free_hints_left:S.meta.free_hints_left-1,updated_at:new Date().toISOString()})
+      .eq('team_id',S.team);
+    S.hintMsg=clue+' (free Whisker used)';
+  }else{
+    await c.from('score_events').insert({team_id:S.team,stop_number:n,points:-2,description:`Hint at stop ${n}`});
+    S.hintMsg=clue+' (−2 points — Cleocatra judges)';
+  }
+  await loadAll();render();
+}
+
+/* ============ GAUNTLET ============ */
+function renderGauntlet(){
+  if(S.gTimer){clearInterval(S.gTimer);S.gTimer=null;}
+  const meta=S.meta||{};
+  if(meta.gauntlet_done){renderGauntletPass(meta);return;}
+  if(!meta.gauntlet_card){
+    $('screen').innerHTML=`
+    <div class="card center">
+      <div style="font-size:44px">⚔️</div>
+      <h1>The Nine Lives Gauntlet</h1>
+      <p><b>Act I is done.</b> Report to the <b>Gauntlet Hub — the open courtyard by Theatro Arkan</b>, then draw your challenge.</p>
+      <p class="tiny">One card. Two minutes. +10 if you pass (+3 speed bonus if you finish under 2:00). Fail? Redraw once — 0 points, maximum dignity lost.</p>
+      ${progressNote()}
+      <button class="btn gold" onclick="drawCard()">🃏 Draw your card</button>
+    </div>`;
+    return;
+  }
+  const card=GCARDS[(meta.gauntlet_card||1)-1];
+  $('screen').innerHTML=`
+  <div class="card">
+    <span class="act-badge">NINE LIVES GAUNTLET</span>
+    <div class="gcard"><h3>${esc(card.title)}</h3><p>${esc(card.body)}</p></div>
+    <div id="gArea"></div>
+    <div class="msg" id="playMsg"></div>
+  </div>`;
+  if(card.type==='riddle')renderSphinx();
+  else if(card.type==='quiz')renderQuiz();
+  else renderPhysical();
+}
+async function drawCard(){
+  const pick=1+Math.floor(Math.random()*6);
+  localStorage.setItem('ght_gcard_'+S.team,String(pick));
+  const {error}=await c.from('game_meta').update({gauntlet_card:pick,updated_at:new Date().toISOString()})
+    .eq('team_id',S.team);
+  if(error){pmsg('Could not draw: '+error.message,'err');return;}
+  await loadAll();render();
+}
+function gStartTimer(){
+  if(!S.gStart)S.gStart=Date.now();
+  const tick=()=>{
+    const el=Date.now()-S.gStart;const left=Math.max(0,120000-el);
+    const mm=String(Math.floor(left/60000)),ss=String(Math.floor((left%60000)/1000)).padStart(2,'0');
+    const t=$('gtimer');if(t){t.textContent=`${mm}:${ss}`;t.classList.toggle('low',left<30000);}
+  };
+  tick();S.gTimer=setInterval(tick,500);
+  const b=$('ggo');if(b){b.disabled=true;b.textContent='⏱ Timer running — GO GO GO!';}
+}
+function renderPhysical(){
+  $('gArea').innerHTML=`
+    <div class="timer" id="gtimer">2:00</div>
+    <button class="btn main" id="ggo" onclick="gStartTimer()">⏱ Start the 2:00 clock</button>
+    <button class="btn gold" onclick="completeGauntlet()">✅ We did it! (host witnessed)</button>
+    <p class="tiny">Do it at the hub. The host (or the most responsible bystander) must see it happen.</p>`;
+}
+function renderSphinx(){
+  let idx=localStorage.getItem('ght_sphinx_'+S.team);
+  if(idx==null){idx=String(Math.floor(Math.random()*SPHINX.length));localStorage.setItem('ght_sphinx_'+S.team,idx);}
+  const r=SPHINX[+idx];
+  $('gArea').innerHTML=`
+    <div class="timer" id="gtimer">2:00</div>
+    <p class="qlabel">THE SPHINX ASKS:</p><div class="qtext">${esc(r.q)}</div>
+    <input type="text" id="sqIn" placeholder="Your answer…" autocapitalize="none" />
+    <button class="btn main" id="ggo" onclick="gStartTimer()">⏱ Start the clock & answer</button>
+    <button class="btn gold" onclick="answerSphinx()">Unlock the pass 🐾</button>`;
+}
+async function answerSphinx(){
+  const idx=+localStorage.getItem('ght_sphinx_'+S.team||'0');const r=SPHINX[idx];
+  const na=norm($('sqIn').value);
+  const ok=r.a.some(a=>{const x=norm(a);return na===x||(x.includes(na)&&na.length>=3)||(na.includes(x)&&x.length>=3);});
+  if(!ok){pmsg('The Sphinx hisses. Wrong! Hiss at your shadow 10 seconds and try again.','err');return;}
+  completeGauntlet();
+}
+function renderQuiz(){
+  if(!S.quiz.started){
+    $('gArea').innerHTML=`<p class="qlabel">CANOPIC JAR QUIZ — 5 questions, need 4 ✅</p>
+      <button class="btn main" onclick="S.quiz={started:true,i:0,correct:0};render()">Start the quiz ⏱</button>
+      <p class="tiny">Timer starts on tap. Shouting answers in unison encouraged.</p>`;
+    return;
+  }
+  if(S.quiz.i>=QUIZ.length){
+    const pass=S.quiz.correct>=4;
+    $('gArea').innerHTML=`
+      <div class="center"><div style="font-size:44px">${pass?'🏺✅':'💀'}</div>
+      <h1>${pass?'You passed!':'Not enough'}</h1>
+      <p>${S.quiz.correct}/5 correct — ${pass?'the Canopic Jar accepts your offering.':'Need 4 of 5. Retry the quiz (the jar is patient… mostly).'}</p></div>
+      ${pass?`<button class="btn gold" onclick="completeGauntlet()">Claim the gauntlet pass ✅</button>`:
+        `<button class="btn ghost" onclick="S.quiz={started:false};render()">Retry quiz</button>`}`;
+    return;
+  }
+  const q=QUIZ[S.quiz.i];
+  $('gArea').innerHTML=`
+    <div class="timer" id="gtimer">2:00</div>
+    <p class="qlabel">QUESTION ${S.quiz.i+1}/5 · correct so far: ${S.quiz.correct}</p>
+    <div class="qtext">${esc(q.q)}</div>
+    <input type="text" id="quizIn" placeholder="Answer…" autocapitalize="none" />
+    <button class="btn main" id="ggo" onclick="gStartTimer()">⏱ Start the clock</button>
+    <button class="btn gold" onclick="answerQuiz()">Submit answer</button>`;
+}
+async function answerQuiz(){
+  const q=QUIZ[S.quiz.i];const na=norm($('quizIn').value);
+  const ok=q.a.some(a=>{const x=norm(a);return na===x||x===na||(x.includes(na)&&na.length>=2)||(na.includes(x)&&x.length>=2);});
+  if(ok){S.quiz.correct++;}
+  S.quiz.i++;render();
+  if(ok)showMsg('✅ Correct!','ok');else showMsg('❌ Wrong — the jar judges you silently.','err');
+}
+async function completeGauntlet(){
+  if(S.gTimer){clearInterval(S.gTimer);S.gTimer=null;}
+  const ms=S.gStart?Date.now()-S.gStart:999999;
+  const {data,error}=await c.from('game_meta').update({gauntlet_done:true,gauntlet_ms:ms,updated_at:new Date().toISOString()})
+    .eq('team_id',S.team).eq('gauntlet_done',false).select();
+  if(error){pmsg('Error: '+error.message,'err');return;}
+  if(data&&data.length){
+    await c.from('score_events').insert({team_id:S.team,stop_number:null,points:10,description:'Nine Lives Gauntlet passed'});
+    if(ms<120000)await c.from('score_events').insert({team_id:S.team,stop_number:null,points:3,description:'Gauntlet speed bonus (<2:00)'});
+    await loadAll();
+    showMsg(`Gauntlet cleared! +10${ms<120000?' +3 speed':''} — Act II unlocks! 🗺️`,'ok');
+  }
+  localStorage.removeItem('ght_sphinx_'+S.team);
+  S.quiz={};await loadAll();go('play');
+}
+function renderGauntletPass(meta){
+  $('screen').innerHTML=`
+  <div class="card center">
+    <div class="stamp">🗺️</div>
+    <h1>Act II unlocked</h1>
+    <p>The Sphinx is impressed. Stops <b>13–18</b> are live — the letters spell <b>GOBLET</b>.</p>
+    <p class="tiny">Gauntlet time: ${meta.gauntlet_ms!=null?Math.round(meta.gauntlet_ms/1000)+'s':'—'}${meta.gauntlet_ms<120000?' · ⚡ speed bonus!':''}</p>
+    ${progressNote()}
+    <button class="btn main" onclick="S.playView='riddle';go('play')">Hunt Act II → 🐾</button>
+  </div>`;
+}
+
+/* ============ FINALE ============ */
+function renderFinale(){
+  const fin=S.finishes.find(f=>f.team_id===S.team);
+  $('screen').innerHTML=`
+  <div class="card">
+    <span class="act-badge">🏁 FINALE · STOP 1</span>
+    <h1>The final riddle</h1>
+    <div class="riddle">You've spelled my three words from G to T — now run back where the fountain flow.
+Golden… Gelato… Goblet.
+Where does a golden gelato goblet live?
+RUN TO STOP 1! 🐱🍦</div>
+    <p class="tiny">You're at the Grand Fountain & Main Courtyard. Type the three words to claim your finish:</p>
+    <input type="text" id="finIn" placeholder="The three words…" autocapitalize="none" />
+    <button class="btn gold" onclick="claimFinish()">Claim the goblet 🏆</button>
+    <div class="msg" id="playMsg"></div>
+    ${fin?`<p class="tiny" style="margin-top:10px">Finished at place <b>#${fin.finish_order}</b>.</p>`:''}
+  </div>`;
+}
+async function claimFinish(){
+  const na=norm($('finIn').value);
+  if(na!==FINAL_WORDS){pmsg('Cleocatra scoffs. That is not what the letters spell. (Look at your Letters tab 📋)','err');return;}
+  const {data:upd,error:e1}=await c.from('game_meta').update({finished:true,updated_at:new Date().toISOString()})
+    .eq('team_id',S.team).eq('finished',false).select();
+  if(e1){pmsg('Error: '+e1.message,'err');return;}
+  let fin=null;
+  if(upd&&upd.length){
+    const {data:ins,error:e2}=await c.from('finishes').insert({team_id:S.team}).select();
+    if(e2){pmsg('Error: '+e2.message,'err');return;}
+    fin=(ins&&ins[0])||null;
+    if(!fin){const r=await c.from('finishes').select('*').eq('team_id',S.team);fin=(r.data||[])[0];}
+    const rank=fin?fin.finish_order:99;
+    if(rank<=3){
+      await c.from('score_events').insert({team_id:S.team,stop_number:null,points:FINISH_PTS[rank],
+        description:`Finish bonus — ${rank===1?'1st':rank===2?'2nd':'3rd'} place`});
+    }
+    await loadAll();
+    showMsg(`🏁 FINISHED! Place #${rank}${rank<=3?` — +${FINISH_PTS[rank]} bonus!`:''} The goblet is (maybe) yours.`,`ok`);
+  }else{await loadAll();}
+  go('play');
+}
+function renderFinished(){
+  const fin=S.finishes.find(f=>f.team_id===S.team);
+  const rank=fin?fin.finish_order:'—';
+  $('screen').innerHTML=`
+  <div class="card center">
+    <div style="font-size:56px">🏆</div>
+    <h1>You finished!</h1>
+    <p>Place <b>#${rank}</b> · final letter count <b>${lettersCount()}/18</b></p>
+    <p class="tiny">Find the host for the frozen trophy bag, prizes, and the group photo. 🐱🍦</p>
+    ${progressNote()}
+    <button class="btn ghost small" onclick="changeTeam()">Switch guild</button>
+  </div>`;
+}
+
+/* ============ LETTERS ============ */
+function renderLetters(){
+  const t=team();
+  let boxes='';
+  for(let n=1;n<=18;n++){
+    const on=letterOn(n);
+    boxes+=`<div class="lbox ${on?'on':''} ${(n===6||n===12)?'gap':''}"><span class="n">${n}</span>${on?LETTERS[n-1]:'?'}</div>`;
+  }
+  const done=lettersCount();
+  $('screen').innerHTML=`
+  <div class="card center">
+    <h2>🔤 Your letters</h2>
+    <div class="letters">${boxes}</div>
+    ${done>=12?`<div class="words"><span class="gapw">GOLDEN</span><span class="gapw">GELATO</span>${done>=18?'<span class="gapw">GOBLET</span>':''}</div>`:
+      `<p class="tiny">Collect all 18 to spell what Cleocatra stole…</p>`}
+    ${done===18?`<p style="font-weight:800;color:var(--teal-dark);margin-top:10px">Now RUN to Stop 1 and type the three words! 🏃</p>`:''}
+    ${progressNote()}
+    <p class="tiny">Every letter = riddle solved + dare done. Points are already in your score.</p>
+  </div>`;
+}
+
+/* ============ BOARD ============ */
+function renderBoard(){
+  const rows=S.teams.map(t=>{
+    const letters=S.progress.filter(p=>p.team_id===t.id&&p.dare_done).length;
+    const fin=S.finishes.find(f=>f.team_id===t.id);
+    return {t,pts:totalFor(t.id),letters,fin};
+  }).sort((a,b)=>(b.fin?1:0)-(a.fin?1:0)||b.pts-a.pts);
+  $('screen').innerHTML=`
+  <div class="card">
+    <h2>🏆 Live leaderboard</h2>
+    ${rows.map((r,i)=>`<div class="lbrow ${r.t.id===S.team?'me':''}">
+      <span class="rk">${i+1}</span>
+      <span class="nm">${r.t.mascot.split(' ')[0]} ${esc(r.t.name)}
+        <small>${r.letters}/18 letters${r.fin?` · 🏁 #${r.fin.finish_order}`:''}</small></span>
+      <span class="pts">${r.pts}</span></div>`).join('')}
+    <p class="tiny" style="margin-top:10px">Updates live. Twist & quest points from the host land here too.</p>
+    <a class="btn ghost small" href="scoreboard.html">Open the big scoreboard →</a>
+  </div>`;
+}
+
+/* ============ HOST ============ */
+function renderHost(){
+  if(!S.hostMode){
+    $('screen').innerHTML=`
+    <div class="card hostbox">
+      <h2>🔐 Host controls</h2>
+      <details open><summary>Enter the host PIN</summary>
+        <div style="margin-top:10px">
+          <input type="password" id="pinIn" placeholder="Host PIN" autocomplete="off" />
+          <button class="btn main" onclick="hostLogin()">Unlock</button>
+        </div>
+      </details>
+      <p class="tiny">Players should use the Play tab. This panel starts the hunt, awards twist points, and resets the game.</p>
+    </div>`;
+    return;
+  }
+  const started=S.settings.hunt_started_at;
+  $('screen').innerHTML=`
+  <div class="card hostbox">
+    <h2>🎛️ Host panel</h2>
+    <p class="tiny">Hunt clock: <b>${started?new Date(started).toLocaleTimeString():'not started'}</b></p>
+    <button class="btn main" onclick="startHunt()">${started?'⏱ Restart the release clock':'▶️ Start the hunt'}</button>
+    <p class="tiny">Sets T=now. Blue +0 · Red +5 · Green +10 · Gold +15 · Purple +20 minutes.</p>
+    <hr style="border:none;border-top:1px dashed var(--gold);margin:14px 0" />
+    <h2>⚡ Quick points (twists ★ quests curses)</h2>
+    <select id="qaTeam" style="width:100%;padding:12px;border-radius:9px;border:1px solid #d8cba9;font-size:15px">
+      ${S.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+    </select>
+    <div class="row" style="margin-top:8px">
+      <input type="text" id="qaPts" placeholder="±points" inputmode="numeric" style="flex:1" />
+      <input type="text" id="qaWhy" placeholder="why…" style="flex:2" />
+    </div>
+    <button class="btn gold" onclick="quickAward()">Award points</button>
+    <hr style="border:none;border-top:1px dashed var(--gold);margin:14px 0" />
+    <button class="btn danger" onclick="resetAll()">🧹 Reset the whole game</button>
+    <p class="tiny">Clears scores, letters, gauntlet & finishes — and stops the clock. Keeps the roster of players.</p>
+    <button class="btn ghost small" onclick="S.hostMode=false;render()">Lock panel</button>
+  </div>`;
+}
+async function sha256hex(text){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function hostLogin(){
+  const pin=$('pinIn').value;if(!pin)return alert('Enter the PIN');
+  const hex=await sha256hex(pin);
+  if(hex===S.settings.host_pin_sha256){S.hostMode=true;render();}
+  else{alert('Wrong PIN.');$('pinIn').value='';}
+}
+async function startHunt(){
+  if(S.settings.hunt_started_at&&!confirm('Restart the release clock? All guild release times reset to now.'))return;
+  const {error}=await c.from('settings').upsert({key:'hunt_started_at',value:new Date().toISOString()},{onConflict:'key'});
+  if(error)return alert('Failed: '+error.message);
+  await loadAll();showMsg('Hunt started! Blue is released — the rest follow on the clock.','ok');go('play');
+}
+async function quickAward(){
+  const tid=$('qaTeam').value;const pts=parseInt($('qaPts').value,10);const why=$('qaWhy').value.trim()||'Host award';
+  if(isNaN(pts)||pts===0)return alert('Enter points (e.g. 3 or -2)');
+  const {error}=await c.from('score_events').insert({team_id:tid,stop_number:null,points:pts,description:why});
+  if(error)return alert('Failed: '+error.message);
+  $('qaPts').value='';$('qaWhy').value='';
+  await loadAll();showMsg(`Awarded ${pts} to ${S.teams.find(t=>t.id===tid).name}.`,'ok');
+}
+async function resetAll(){
+  const v=prompt('Type RESET to wipe all scores, letters, gauntlet progress and finishes:');
+  if(v!=='RESET')return;
+  const results=await Promise.all([
+    c.from('score_events').delete().neq('id','00000000-0000-0000-0000-000000000000'),
+    c.from('stops_progress').delete().neq('stop_number',-1),
+    c.from('finishes').delete().neq('finish_order',-1),
+    c.from('game_meta').delete().neq('team_id','__none__'),
+    c.from('settings').upsert({key:'hunt_started_at',value:''},{onConflict:'key'})
+  ]);
+  const err=results.find(r=>r.error);
+  if(err)return alert('Reset failed: '+err.error.message);
+  S.quiz={};S.playView='riddle';
+  await loadAll();showMsg('Game reset. Fresh hunt — start the clock when ready.','ok');go('host');
+}
+
+/* ============ BOOT ============ */
+try{
+  c.channel('game')
+    .on('postgres_changes',{event:'*',schema:'public',table:'score_events'},()=>loadAll())
+    .on('postgres_changes',{event:'*',schema:'public',table:'stops_progress'},()=>loadAll())
+    .on('postgres_changes',{event:'*',schema:'public',table:'game_meta'},()=>loadAll())
+    .on('postgres_changes',{event:'*',schema:'public',table:'finishes'},()=>loadAll())
+    .on('postgres_changes',{event:'*',schema:'public',table:'settings'},()=>loadAll())
+    .subscribe();
+}catch(e){console.warn('realtime off',e);}
+loadAll();
+setInterval(()=>{if(S.team)loadAll();},6000);
+</script>
+</body>
+</html>
