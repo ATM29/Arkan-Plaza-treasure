@@ -266,7 +266,7 @@ const FINISH_PTS={1:10,2:6,3:3};
 /* ============ STATE ============ */
 let S={team:localStorage.getItem('ght_team')||null,teams:[],progress:[],meta:null,events:[],settings:{},
        finishes:[],players:[],tab:'play',hostMode:false,playView:'riddle',curStop:null,reveal:null,
-       photo:null,mediaType:null,gauntletPick:null,gTimer:null,gStart:0,waitTimer:null,hintMsg:'',wrongN:0,quiz:{},justDone:null};
+       _loaded:false,photo:null,mediaType:null,gauntletPick:null,gTimer:null,gStart:0,waitTimer:null,hintMsg:'',wrongN:0,quiz:{},justDone:null};
 let lastData='';
 
 function $(id){return document.getElementById(id);}
@@ -312,6 +312,7 @@ async function loadAll(){
   S.teams=t.data||[];S.players=p.data||[];S.progress=pr.data||[];S.meta=(m.data||[]).find(x=>x.team_id===S.team)||null;
   S.events=e.data||[];S.settings={};(s.data||[]).forEach(r=>S.settings[r.key]=r.value);
   S.finishes=f.data||[];
+  S._loaded=true;
   if(S.team&&!S.meta){await ensureMeta();}
   const sig=JSON.stringify([S.progress,S.events,S.settings,S.finishes,S.meta,S.players,
     S.teams.map(t=>t.id)]);
@@ -392,6 +393,7 @@ function tickWait(){
 /* ============ PLAY ============ */
 function renderPlay(){
   if(S.waitTimer){clearInterval(S.waitTimer);S.waitTimer=null;}
+  if(!S._loaded){$('screen').innerHTML='<div class="card center"><div class="loading">Summoning the guilds…</div></div>';return;}
   if(!S.settings.hunt_started_at){renderWait(0,false);S.waitTimer=setInterval(tickWait,1000);return;}
   if(releaseTime()>Date.now()){tickWait();S.waitTimer=setInterval(tickWait,1000);return;}
   if(finished()){renderFinished();return;}
@@ -402,7 +404,7 @@ function renderPlay(){
   if(n>=13&&!gauntletDone()){renderGauntlet();return;}
   const st=STOPS[n-1];
   const pr=S.progress.find(p=>p.stop_number===n);
-  if(pr&&pr.riddle_solved&&!pr.dare_done){renderDare(st);return;}
+  if(pr&&pr.riddle_solved&&!pr.dare_done){renderDareAsync(st);return;}
   if(pr&&pr.riddle_solved&&pr.dare_done){renderDoneCard(st,n);return;}
   renderRiddle(st);
 }
@@ -479,7 +481,7 @@ function renderReveal(){
   document.body.appendChild(d);
 }
 function closeReveal(){const d=$('revealOv');if(d)d.remove();S.reveal=null;S.playView='dare';
-  const n=curStop();renderDare(STOPS[n-1]);}
+  const n=curStop();renderDareAsync(STOPS[n-1]);}
 function renderDare(st){
   $('screen').innerHTML=`
   <div class="card">
@@ -489,24 +491,42 @@ function renderDare(st){
     <div class="dare"><b>Dare:</b> ${esc(st.dare)}</div>
     <p class="bonus">${esc(st.bonus)}</p>
     ${S.photo?(S.mediaType==='video'
-      ?`<video src="${S.photo}" controls playsinline style="width:100%;border-radius:12px;border:3px solid var(--gold);margin-top:8px"></video>`
+      ?`<video src="${S.photo}" controls playsinline preload="metadata" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin-top:8px"></video>`
       :`<img src="${S.photo}" style="width:100%;border-radius:12px;border:3px solid var(--gold);margin-top:8px" />`):''}
     <div class="row" style="margin-top:8px">
       <button class="btn main" style="flex:1" onclick="$('camera').click()">📷 ${S.photo&&S.mediaType==='image'?'Retake photo':'Photo'}</button>
       <button class="btn ghost" style="flex:1" onclick="$('videoCam').click()">🎥 ${S.photo&&S.mediaType==='video'?'Retake video':'Video'}</button>
     </div>
     ${S.photo?`<button class="btn gold" onclick="acceptDare(${st.n})">✓ ${S.mediaType==='video'?'Video':'Photo'} looks glorious — claim the points</button>`:''}
+    <div class="msg" id="playMsg"></div>
     <p class="tiny" style="margin-top:10px">🎥 Short videos welcome (10–30s is plenty) — a video counts as your photo proof. The roaming host may demand to see it later; keep it on your roll. 🐱</p>
   </div>`;
+}
+/* captured dare media survives reloads (IndexedDB) */
+function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('ght_media',1);
+  q.onupgradeneeded=()=>{q.result.createObjectStore('k');};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+async function saveMedia(stop,type,blob){try{const db=await idbOpen();
+  db.transaction('k','readwrite').objectStore('k').put({type:type,blob:blob,ts:Date.now()},String(stop));}catch(e){}}
+async function loadMedia(stop){try{const db=await idbOpen();
+  return await new Promise(res=>{const r=db.transaction('k').objectStore('k').get(String(stop));
+    r.onsuccess=()=>res(r.result||null);r.onerror=()=>res(null);});}catch(e){return null;}}
+async function clearMedia(stop){try{const db=await idbOpen();
+  db.transaction('k','readwrite').objectStore('k').delete(String(stop));}catch(e){}}
+async function renderDareAsync(st){
+  if(!S.photo){const m=await loadMedia(st.n);
+    if(m&&!S.photo){S.photo=URL.createObjectURL(m.blob);S.mediaType=m.type;}}
+  renderDare(st);
 }
 function onPhoto(ev){
   const f=ev.target.files&&ev.target.files[0];if(!f)return;
   S.photo=URL.createObjectURL(f);S.mediaType='image';ev.target.value='';
+  saveMedia(curStop(),'image',f);
   const n=curStop();renderDare(STOPS[n-1]);
 }
 function onVideo(ev){
   const f=ev.target.files&&ev.target.files[0];if(!f)return;
   S.photo=URL.createObjectURL(f);S.mediaType='video';ev.target.value='';
+  saveMedia(curStop(),'video',f);
   const n=curStop();renderDare(STOPS[n-1]);
 }
 async function acceptDare(n){
@@ -517,11 +537,11 @@ async function acceptDare(n){
   if(data&&data.length){
     const pts=tierPts(st.tier);
     await c.from('score_events').insert({team_id:S.team,stop_number:n,points:pts,description:`Stop ${n} dare complete`});
-    S.photo=null;S.mediaType=null;S.playView='riddle';S.hintMsg='';S.justDone=n;
+    S.photo=null;S.mediaType=null;clearMedia(n);S.playView='riddle';S.hintMsg='';S.justDone=n;
     await loadAll();
     showMsg(`Letter ${st.letter} earned! +${pts} — next stop unlocked. 🐱`,'ok');
     go('play');
-  }else{S.photo=null;S.mediaType=null;await loadAll();go('play');}
+  }else{await loadAll();go('play');showMsg('Couldn\u0027t claim that — state refreshed, tap the claim button again.','err');}
 }
 function renderDoneCard(st,n){
   $('screen').innerHTML=`
